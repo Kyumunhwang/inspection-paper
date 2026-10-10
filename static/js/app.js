@@ -313,7 +313,10 @@ async function handleSyncFolder() {
   const folderPathText = document.getElementById('folderPathText');
   const folderIdMeta = document.getElementById('folderIdMeta');
 
-  const folderId = folderInput.value.trim() || state.drive.folder_id;
+  let rawFolder = folderInput.value.trim() || state.drive.folder_id;
+  const match = rawFolder.match(/folders\/([a-zA-Z0-9_-]+)/);
+  const folderId = match ? match[1] : rawFolder.split('?')[0].split('&')[0].trim();
+  folderInput.value = folderId;
 
   syncBtn.disabled = true;
   syncBtnIcon.classList.add('animate-spin');
@@ -603,6 +606,27 @@ async function loadAndRenderAiBatchAudit() {
       `;
       container.appendChild(card);
     });
+
+    // Synchronize AI Quality Audit evaluations directly into the main inspection table
+    if (state.drive && state.drive.files) {
+      data.reports.forEach(report => {
+        const file = state.drive.files.find(f =>
+          f.subject.toLowerCase().includes(report.subject.toLowerCase()) ||
+          report.subject.toLowerCase().includes(f.subject.toLowerCase())
+        );
+        if (file) {
+          file.quality_summary = report.status === 'COMPLIANT'
+            ? `Passed (${report.step2_score})`
+            : report.status === 'MISSING'
+            ? 'Not submitted'
+            : `${report.step2_score}`;
+          file.quality_status = report.status === 'COMPLIANT' ? 'normal' : 'error';
+          file.memo = report.recommendation;
+        }
+      });
+      renderTable(state.drive.files);
+      renderMetrics(state.drive);
+    }
   } catch (err) {
     showToast(`AI audit error: ${err.message}`, 'error');
   }

@@ -98,6 +98,18 @@ class DriveService:
             ),
         ]
 
+    @staticmethod
+    def clean_folder_id(raw_id: str) -> str:
+        """Sanitize folder ID by stripping URLs and query params."""
+        if not raw_id:
+            return ""
+        import re
+        raw_id = raw_id.strip()
+        match = re.search(r"folders/([a-zA-Z0-9_-]+)", raw_id)
+        if match:
+            return match.group(1)
+        return raw_id.split("?")[0].split("&")[0].strip()
+
     def get_folder_files(
         self, folder_id: str, access_token: Optional[str] = None
     ) -> DriveFolderSyncResponse:
@@ -110,16 +122,23 @@ class DriveService:
         Returns:
             DriveFolderSyncResponse with files and metrics.
         """
+        clean_id = self.clean_folder_id(folder_id)
+
         # If valid access token is provided and not a placeholder, query Google Drive API
         if access_token and not access_token.startswith("mock_"):
             try:
-                return self._fetch_from_google_api(folder_id, access_token)
+                return self._fetch_from_google_api(clean_id, access_token)
             except Exception as exc:
-                # Log error and fallback to mock simulation with error indication
-                print(f"[DriveService] Error querying Google Drive API: {exc}. Falling back to simulation.")
+                err_msg = str(exc)
+                print(f"[DriveService] Error querying Google Drive API: {err_msg}")
+                from fastapi import HTTPException
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Google Drive API Error: {err_msg}. (Make sure 'Google Drive API' is enabled in GCP Console and folder '{clean_id}' is shared with your account)."
+                )
 
         # Simulation Mode
-        files = self._mock_data_cache.get(folder_id, self._mock_data_cache["default"])
+        files = self._mock_data_cache.get(clean_id, self._mock_data_cache["default"])
         uploaded_count = sum(1 for f in files if f.is_uploaded)
         approved_count = sum(1 for f in files if f.pdf_exists)
 

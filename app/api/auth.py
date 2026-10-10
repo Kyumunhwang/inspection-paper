@@ -42,8 +42,17 @@ def get_auth_status() -> AuthStatusResponse:
     )
 
 
+def _get_redirect_uri(request: Request) -> str:
+    """Resolve redirect URI dynamically from request to ensure exact matching."""
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    proto = request.headers.get("x-forwarded-proto", "https")
+    if host and ("run.app" in host or "localhost" in host or "127.0.0.1" in host):
+        return f"{proto}://{host}/api/auth/google/callback"
+    return settings.GOOGLE_REDIRECT_URI
+
+
 @router.get("/google/login")
-def google_login() -> RedirectResponse:
+def google_login(request: Request) -> RedirectResponse:
     """Initiate Google OAuth 2.0 authorization code flow.
 
     Returns:
@@ -53,20 +62,21 @@ def google_login() -> RedirectResponse:
         # Gracefully redirect back with notice instead of raw 400 error page
         return RedirectResponse(url="/?oauth_error=not_configured")
 
+    redirect_uri = _get_redirect_uri(request)
     client_config = {
         "web": {
             "client_id": settings.GOOGLE_CLIENT_ID,
             "client_secret": settings.GOOGLE_CLIENT_SECRET,
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
-            "redirect_uris": [settings.GOOGLE_REDIRECT_URI],
+            "redirect_uris": [redirect_uri],
         }
     }
 
     flow = Flow.from_client_config(
         client_config,
         scopes=settings.GOOGLE_SCOPES,
-        redirect_uri=settings.GOOGLE_REDIRECT_URI,
+        redirect_uri=redirect_uri,
     )
 
     auth_url, _ = flow.authorization_url(
@@ -79,30 +89,32 @@ def google_login() -> RedirectResponse:
 
 
 @router.get("/google/callback")
-def google_callback(code: str = Query(...)) -> RedirectResponse:
+def google_callback(request: Request, code: str = Query(...)) -> RedirectResponse:
     """Handle Google OAuth 2.0 authorization code callback.
 
     Args:
+        request: Incoming HTTP request.
         code: Authorization code returned by Google.
 
     Returns:
         RedirectResponse to main dashboard.
     """
     try:
+        redirect_uri = _get_redirect_uri(request)
         client_config = {
             "web": {
                 "client_id": settings.GOOGLE_CLIENT_ID,
                 "client_secret": settings.GOOGLE_CLIENT_SECRET,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [settings.GOOGLE_REDIRECT_URI],
+                "redirect_uris": [redirect_uri],
             }
         }
 
         flow = Flow.from_client_config(
             client_config,
             scopes=settings.GOOGLE_SCOPES,
-            redirect_uri=settings.GOOGLE_REDIRECT_URI,
+            redirect_uri=redirect_uri,
         )
 
         flow.fetch_token(code=code)

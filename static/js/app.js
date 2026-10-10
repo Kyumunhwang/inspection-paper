@@ -70,7 +70,20 @@ function showToast(message, type = 'info') {
   setTimeout(() => {
     toast.classList.add('opacity-0', 'translate-y-2');
     setTimeout(() => toast.remove(), 300);
-  }, 3500);
+  }, 4000);
+}
+
+// Navigation Tab Active Style
+function setActiveNav(navKey) {
+  const btnDashboard = document.getElementById('navDashboardBtn');
+  const btnAudit = document.getElementById('navAuditBtn');
+  const btnSettings = document.getElementById('navSettingsBtn');
+
+  if (navKey === 'dashboard') {
+    btnDashboard.className = 'px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary transition-all';
+    btnAudit.className = 'px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors';
+    btnSettings.className = 'px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-1';
+  }
 }
 
 // UI State Renderers
@@ -81,8 +94,8 @@ function renderHeader(user) {
 
   if (user && user.is_authenticated) {
     headerUserCard.classList.remove('hidden');
-    headerUserName.textContent = user.name || 'Vice Principal';
-    headerUserEmail.textContent = user.email || 'vice.principal@liskorea.org';
+    headerUserName.textContent = user.name || 'Vice Principal Kyumun Hwang';
+    headerUserEmail.textContent = user.email || 'kyumun_hwang@liskorea.org';
   } else {
     headerUserCard.classList.add('hidden');
   }
@@ -106,8 +119,8 @@ function renderAuthCard(auth) {
       ${isMock ? 'Mock Simulation Mode' : 'OAuth 2.0 Connected'}
     `;
 
-    authUserEmail.textContent = auth.user.email;
-    authRoleBadge.textContent = auth.user.role;
+    authUserEmail.textContent = auth.user.email || 'kyumun_hwang@liskorea.org';
+    authRoleBadge.textContent = auth.user.role || 'Vice Principal (Administrator)';
     apiStatusText.innerHTML = `
       <span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
       ${isMock ? 'Simulation Adapter Active (Read-only)' : 'Google Drive & Docs API v3 Active'}
@@ -123,7 +136,7 @@ function renderAuthCard(auth) {
     mockSwitchBtn.textContent = isMock ? 'Connect Real Google Account' : 'Switch to Mock Mode';
     mockSwitchBtn.onclick = () => {
       if (isMock) {
-        window.location.href = '/api/auth/google/login';
+        triggerRealGoogleLogin();
       } else {
         handleMockSignIn();
       }
@@ -145,13 +158,21 @@ function renderAuthCard(auth) {
       <span class="material-symbols-outlined text-[15px]">login</span>
       Sign In with Google
     `;
-    authActionBtn.onclick = () => {
-      window.location.href = '/api/auth/google/login';
-    };
+    authActionBtn.onclick = triggerRealGoogleLogin;
 
     mockSwitchBtn.classList.remove('hidden');
     mockSwitchBtn.textContent = 'Sign In as Mock Admin';
     mockSwitchBtn.onclick = handleMockSignIn;
+  }
+}
+
+function triggerRealGoogleLogin() {
+  if (!state.auth.is_configured) {
+    // Show settings modal with clear guidance
+    openSettingsModal();
+    showToast('Google OAuth Credentials required to connect real account.', 'warning');
+  } else {
+    window.location.href = '/api/auth/google/login';
   }
 }
 
@@ -265,7 +286,7 @@ function renderTable(files) {
               Open <span class="material-symbols-outlined text-[13px]">north_east</span>
             </a>
           ` : `
-            <span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-xs font-mono">-</span>
+            <span class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant text-xs font-mono">-</span>
           `}
           <button onclick="openDocsParsingModal('${docKey}')" class="px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-semibold inline-flex items-center gap-1 transition-all shadow-sm">
             <span class="material-symbols-outlined text-[14px]">description</span>
@@ -392,7 +413,6 @@ async function switchDocsParsingSubject(docId) {
 }
 
 async function loadAndRenderDocData(docId) {
-  // Update subject tab styles
   const tabIds = ['g10_eng', 'g11_math', 'g10_kor', 'g9_hist', 'g12_bio'];
   tabIds.forEach(id => {
     const btn = document.getElementById(`tabBtn-${id}`);
@@ -408,7 +428,6 @@ async function loadAndRenderDocData(docId) {
     const data = await ApiClient.getParsedDoc(docId);
     state.currentDocData = data;
 
-    // Render Metrics & Left Column
     document.getElementById('metricSizeText').textContent = `Size: ${data.size}`;
     document.getElementById('metricLatencyText').textContent = `Latency: ${data.latency}`;
     document.getElementById('leftColumnFileName').textContent = data.fileName;
@@ -416,19 +435,16 @@ async function loadAndRenderDocData(docId) {
     document.getElementById('docHashText').textContent = data.hash;
     document.getElementById('rawTextStreamBox').value = data.rawText;
 
-    // Render Status Badge
     const statusBadge = document.getElementById('parsingStatusBadge');
     statusBadge.textContent = data.statusBadge;
     statusBadge.className = `px-2.5 py-0.5 rounded-full text-xs font-bold ${data.badgeClass}`;
 
-    // Render Step 1
     document.getElementById('extractedSubject').textContent = data.metadata.subject;
     document.getElementById('extractedTeacher').textContent = data.metadata.teacher;
     document.getElementById('extractedDate').textContent = data.metadata.date;
     document.getElementById('extractedTotalScore').textContent = data.metadata.score;
     document.getElementById('step1ScoreBadge').textContent = data.metadata.step1Score;
 
-    // Render Step 2
     document.getElementById('scoreBreakdownSummary').textContent = data.scores.summary;
     document.getElementById('scoreSumTotal').textContent = data.scores.total;
     document.getElementById('barClosed').style.width = data.scores.barClosed;
@@ -444,13 +460,11 @@ async function loadAndRenderDocData(docId) {
       </span>
     `;
 
-    // Render Step 3
     document.getElementById('step3StatusTag').textContent = data.step3.statusTag;
     document.getElementById('step3StatusTag').className = `text-[11px] font-semibold ${data.step3.statusTagClass}`;
     document.getElementById('step3McqStatus').textContent = data.step3.mcqStatus;
     document.getElementById('step3PtsStatus').textContent = data.step3.ptsStatus;
 
-    // Render JSON Pre Block
     document.getElementById('rawJsonPreBlock').textContent = JSON.stringify(data.parsedJson || data, null, 2);
   } catch (err) {
     showToast(`Error loading doc details: ${err.message}`, 'error');
@@ -605,6 +619,42 @@ async function reRunAiBatchAudit() {
   }
 }
 
+// ================= MODAL 3 & 4: Audit Logs & Settings =================
+function openAuditLogsModal() {
+  document.getElementById('auditLogsModal').classList.remove('hidden');
+}
+
+function closeAuditLogsModal() {
+  document.getElementById('auditLogsModal').classList.add('hidden');
+}
+
+function openSettingsModal() {
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal').classList.add('hidden');
+}
+
+function copyRedirectUri() {
+  const text = document.getElementById('redirectUriDisplay').textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied redirect URI to clipboard.', 'success');
+  });
+}
+
+function saveSettingsChanges() {
+  const newFolder = document.getElementById('settingsFolderIdInput').value.trim();
+  if (newFolder) {
+    state.drive.folder_id = newFolder;
+    document.getElementById('folderIdInput').value = newFolder;
+    document.getElementById('folderIdMeta').textContent = `Folder ID: ${newFolder}`;
+  }
+  closeSettingsModal();
+  showToast('Settings saved. Syncing folder...', 'success');
+  handleSyncFolder();
+}
+
 // Initial Boot Sequence
 async function initializeApp() {
   try {
@@ -631,10 +681,14 @@ async function initializeApp() {
       renderTable(state.drive.files);
     });
 
-    // Check URL parameters for OAuth status
+    // Check URL parameters for OAuth status or errors
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('auth_status') === 'success') {
-      showToast('Successfully authenticated with Google OAuth 2.0', 'success');
+      showToast('Successfully authenticated with Google Workspace OAuth 2.0', 'success');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (urlParams.get('oauth_error') === 'not_configured') {
+      openSettingsModal();
+      showToast('Google OAuth Credentials are not configured yet.', 'warning');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   } catch (error) {

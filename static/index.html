@@ -69,9 +69,12 @@
           </div>
         </div>
         <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
-          <a href="#" class="px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary">Monitoring Dashboard</a>
-          <a href="#" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">Audit Logs</a>
-          <a href="#" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">Settings</a>
+          <button id="navDashboardBtn" onclick="setActiveNav('dashboard')" class="px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary transition-all">Monitoring Dashboard</button>
+          <button id="navAuditBtn" onclick="openAuditLogsModal()" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">Audit Logs</button>
+          <button id="navSettingsBtn" onclick="openSettingsModal()" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">settings</span>
+            Settings
+          </button>
         </nav>
       </div>
 
@@ -79,8 +82,8 @@
         <div id="headerUserCard" class="hidden flex items-center gap-2.5 bg-surface-container-lowest px-3 py-1.5 rounded-xl border border-surface-container shadow-sm">
           <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
           <div class="text-left text-xs">
-            <div id="headerUserName" class="font-semibold text-on-surface">Vice Principal</div>
-            <div id="headerUserEmail" class="text-on-surface-variant font-mono text-[11px]">vice.principal@liskorea.org</div>
+            <div id="headerUserName" class="font-semibold text-on-surface">Vice Principal Kyumun Hwang</div>
+            <div id="headerUserEmail" class="text-on-surface-variant font-mono text-[11px]">kyumun_hwang@liskorea.org</div>
           </div>
           <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary ml-1 shadow-inner">
             <span class="material-symbols-outlined text-[18px]">person</span>
@@ -111,7 +114,7 @@
         <div class="bg-surface-container-low p-3 rounded-xl flex items-center justify-between my-3">
           <div class="flex flex-col">
             <span class="text-xs text-on-surface-variant">Authenticated Administrator</span>
-            <span id="authUserEmail" class="font-mono text-sm text-primary font-semibold">vice.principal@liskorea.org</span>
+            <span id="authUserEmail" class="font-mono text-sm text-primary font-semibold">kyumun_hwang@liskorea.org</span>
           </div>
           <span id="authRoleBadge" class="px-2.5 py-1 bg-surface-container-lowest text-primary text-xs font-semibold rounded-md shadow-sm">
             Vice Principal (Full Audit)
@@ -124,8 +127,8 @@
             Google Drive & Docs API v3 Ready
           </span>
           <div class="flex items-center gap-2">
-            <button id="mockSwitchBtn" class="px-2.5 py-1 text-primary hover:bg-surface-container text-xs font-medium rounded transition-colors hidden">
-              Mode Switch
+            <button id="mockSwitchBtn" class="px-2.5 py-1 text-primary hover:bg-surface-container text-xs font-semibold rounded transition-colors hidden">
+              Connect Real Google Account
             </button>
             <button id="authActionBtn" class="px-3 py-1 bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium rounded transition-colors flex items-center gap-1">
               <span class="material-symbols-outlined text-[15px]">logout</span>
@@ -314,13 +317,11 @@
           <span>Active filter view: <strong class="text-primary font-mono font-semibold" id="footerActiveFilterText">ALL</strong></span>
         </div>
         <div class="flex items-center gap-2.5 flex-wrap">
-          <!-- Docs Parsing Simulator Trigger -->
           <button class="px-4 py-2 bg-surface-container-lowest hover:bg-surface-container border border-primary/40 text-primary text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-sm" onclick="openDocsParsingModal('g10_eng')">
             <span class="material-symbols-outlined text-[18px] text-primary">description</span>
             <span>Google Docs Text Parser [F3]</span>
           </button>
 
-          <!-- AI Batch Quality Audit Trigger -->
           <button class="px-4 py-2 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-sm" onclick="openAiBatchModal()">
             <span class="material-symbols-outlined text-[18px]">psychology</span>
             <span>AI Batch Quality Audit [F6]</span>
@@ -336,7 +337,6 @@
 
     <div class="relative w-full max-w-6xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10 border border-surface-container">
       
-      <!-- Modal Header -->
       <div class="px-6 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-start justify-between gap-4 shrink-0 shadow-sm">
         <div class="flex items-start gap-3">
           <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
@@ -360,7 +360,6 @@
         </button>
       </div>
 
-      <!-- Subject Tabs Toolbar -->
       <div class="px-6 py-2.5 bg-surface-container-low border-b border-surface-container flex flex-col md:flex-row md:items-center justify-between gap-2.5 shrink-0">
         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0" id="docsSubjectTabs">
           <button class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all bg-primary text-on-primary shadow-sm" id="tabBtn-g10_eng" onclick="switchDocsParsingSubject('g10_eng')">
@@ -407,10 +406,8 @@
         </div>
       </div>
 
-      <!-- Scroll Area -->
       <div class="overflow-y-auto px-6 py-4 flex-1 flex flex-col gap-4 bg-background">
 
-        <!-- Re-parsing Progress Bar -->
         <div class="hidden p-3 bg-primary/5 rounded-xl border border-primary/20 flex flex-col gap-1.5 transition-all" id="parsingProgressContainer">
           <div class="flex items-center justify-between text-xs">
             <span class="font-semibold text-primary flex items-center gap-1.5" id="parsingStatusText">
@@ -424,7 +421,6 @@
           </div>
         </div>
 
-        <!-- RAW JSON VIEW -->
         <div class="hidden bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm" id="rawJsonViewContainer">
           <div class="flex items-center justify-between pb-2 border-b border-surface-container mb-2">
             <span class="font-bold text-xs text-primary flex items-center gap-1.5">
@@ -439,9 +435,7 @@
           <pre class="bg-surface-container-low p-3.5 rounded-lg font-mono text-xs text-on-surface overflow-x-auto max-h-56 leading-relaxed" id="rawJsonPreBlock"></pre>
         </div>
 
-        <!-- Two-Column Split Inspector -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <!-- Left Column: Raw Text Stream from Google Docs Export -->
           <div class="lg:col-span-6 flex flex-col gap-2 bg-surface-container-lowest p-4 rounded-xl border border-surface-container shadow-sm">
             <div class="flex items-center justify-between pb-2 border-b border-surface-container">
               <div class="flex items-center gap-2">
@@ -459,7 +453,6 @@
               <span class="font-mono text-xs" id="characterCountText">Characters: 2,840</span>
             </div>
 
-            <!-- Text Box -->
             <div class="relative mt-1">
               <textarea class="w-full h-[430px] p-3.5 bg-surface-container-low font-mono text-xs text-on-surface rounded-lg border border-surface-container leading-relaxed focus:outline-none resize-none shadow-inner" id="rawTextStreamBox" readonly></textarea>
               <div class="absolute bottom-2.5 right-3 text-[11px] font-mono text-on-surface-variant bg-surface-container-lowest/80 px-2 py-0.5 rounded backdrop-blur">
@@ -479,7 +472,6 @@
             </div>
           </div>
 
-          <!-- Right Column: Regex & AI Structured Extraction -->
           <div class="lg:col-span-6 flex flex-col gap-4 bg-surface-container-lowest p-4 rounded-xl border border-surface-container shadow-sm">
             <div class="flex items-center justify-between pb-2 border-b border-surface-container">
               <div class="flex items-center gap-2">
@@ -491,7 +483,6 @@
               </span>
             </div>
 
-            <!-- Step 1: Cover Page Metadata Extraction -->
             <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-primary flex items-center gap-1.5">
@@ -520,7 +511,6 @@
                 </div>
               </div>
 
-              <!-- Checklist for 6 Mandatory Cover Header Items -->
               <div class="mt-1 pt-2 border-t border-surface-container">
                 <span class="text-[11px] font-semibold text-on-surface-variant mb-1.5 block">rules.md 6 Mandatory Header Requirements:</span>
                 <div class="grid grid-cols-3 gap-1.5 text-[11px] font-medium" id="mandatoryHeaderChecklist">
@@ -534,7 +524,6 @@
               </div>
             </div>
 
-            <!-- Step 2: Points & Question Distribution Auto-Calculation -->
             <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-primary flex items-center gap-1.5">
@@ -544,7 +533,6 @@
                 <span class="text-[11px] font-semibold px-2 py-0.5 rounded" id="scoreGuidelineBadge">Guideline Compliant</span>
               </div>
 
-              <!-- Ratio Breakdown Multi-bar -->
               <div class="flex flex-col gap-1.5">
                 <div class="flex items-center justify-between text-xs font-mono">
                   <span id="scoreBreakdownSummary">Closed 25pts (25%) · Open 50pts (50%) · Essay 25pts (25%)</span>
@@ -573,7 +561,6 @@
               </div>
             </div>
 
-            <!-- Step 3: Question Specification & Option Quality Check -->
             <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-primary flex items-center gap-1.5">
@@ -605,7 +592,6 @@
         </div>
       </div>
 
-      <!-- Modal Footer -->
       <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
         <div class="flex items-center gap-2 text-xs text-on-surface-variant">
           <span class="material-symbols-outlined text-[16px] text-primary">sync_saved_locally</span>
@@ -651,7 +637,6 @@
       </div>
 
       <div class="overflow-y-auto px-6 py-4 flex flex-col gap-4">
-        <!-- Progress Bar & Re-run Row -->
         <div class="p-4 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div class="flex items-center gap-2">
@@ -675,7 +660,6 @@
           </div>
         </div>
 
-        <!-- Metric Strip Summary (4 Cards) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
             <span class="text-xs text-on-surface-variant font-medium">Audited</span>
@@ -711,16 +695,13 @@
           </div>
         </div>
 
-        <!-- Subject 3-Step Details -->
         <div class="flex flex-col gap-3">
           <div class="font-bold text-sm text-on-surface flex items-center gap-2 pb-1 border-b border-surface-container">
             <span class="material-symbols-outlined text-primary text-[20px]">fact_check</span>
             Subject Quality Audit Detail Reports
           </div>
 
-          <div id="aiSubjectCardsContainer" class="flex flex-col gap-3">
-            <!-- Dynamic Subject Cards Rendered via JS -->
-          </div>
+          <div id="aiSubjectCardsContainer" class="flex flex-col gap-3"></div>
         </div>
       </div>
 
@@ -730,6 +711,202 @@
           Dispatch Feedback Emails to Teachers
         </button>
         <button class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-lg shadow-sm" onclick="closeAiBatchModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 3: AUDIT LOGS & INSPECTION TRAIL MODAL ================= -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden transition-all" id="auditLogsModal" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm transition-opacity" onclick="closeAuditLogsModal()"></div>
+
+    <div class="relative w-full max-w-4xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10 border border-surface-container">
+      <div class="px-6 py-4 bg-primary text-on-primary flex items-center justify-between gap-4 shrink-0 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[24px]">history</span>
+          </div>
+          <div>
+            <h2 class="font-bold text-lg text-white">System Audit Logs & Inspection Trail</h2>
+            <p class="text-xs text-surface-container-high">Immutable log history of semester exam synchronization, evaluations, and signatures</p>
+          </div>
+        </div>
+        <button class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" onclick="closeAuditLogsModal()">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex flex-col gap-4">
+        <div class="flex items-center justify-between text-xs text-on-surface-variant border-b border-surface-container pb-3">
+          <div class="flex items-center gap-2 font-medium">
+            <span class="material-symbols-outlined text-[18px] text-primary">security</span>
+            <span>Auditor: <strong class="text-on-surface font-semibold">Vice Principal Kyumun Hwang</strong> (kyumun_hwang@liskorea.org)</span>
+          </div>
+          <span class="font-mono text-xs text-secondary font-bold">5 Event Records</span>
+        </div>
+
+        <!-- Audit Timeline Entries -->
+        <div class="flex flex-col gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-surface-container-low border border-surface-container flex items-start gap-3">
+            <span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">verified_user</span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-on-surface text-sm">Exam PDF Approval Signed</span>
+                <span class="font-mono text-[11px] text-on-surface-variant">Today 18:40 UTC</span>
+              </div>
+              <p class="text-on-surface-variant">Grade 10 English Literature PDF inspection verified matching original Doc copy. Status changed to <span class="text-secondary font-semibold">Verified (PDF)</span>.</p>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-surface-container-low border border-surface-container flex items-start gap-3">
+            <span class="material-symbols-outlined text-primary text-[20px] mt-0.5">sync</span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-on-surface text-sm">Google Drive Folder Synchronized</span>
+                <span class="font-mono text-[11px] text-on-surface-variant">Today 18:35 UTC</span>
+              </div>
+              <p class="text-on-surface-variant">Folder ID <code>1A2b3C4d_LIS2025_ExamMid</code> polled. 5 examination papers and status attributes indexed.</p>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-error-container/10 border border-error/20 flex items-start gap-3">
+            <span class="material-symbols-outlined text-error text-[20px] mt-0.5">warning</span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-error text-sm">AI Quality Balance Warning Triggered</span>
+                <span class="font-mono text-[11px] text-on-surface-variant">Today 18:30 UTC</span>
+              </div>
+              <p class="text-on-surface-variant">Grade 11 Pre-Calculus flagged for Essay allocation (45% vs guideline 20-40%). Rebalancing advised.</p>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-tertiary-fixed/20 border border-tertiary-fixed/40 flex items-start gap-3">
+            <span class="material-symbols-outlined text-tertiary text-[20px] mt-0.5">rule</span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-on-surface text-sm">MCQ 4-Option Verification Performed</span>
+                <span class="font-mono text-[11px] text-on-surface-variant">Today 18:25 UTC</span>
+              </div>
+              <p class="text-on-surface-variant">Grade 10 Korean Literature scanned. Item #3 flagged for missing choice (D). Teacher notification draft created.</p>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-surface-container-low border border-surface-container flex items-start gap-3">
+            <span class="material-symbols-outlined text-outline-variant text-[20px] mt-0.5">notifications_active</span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-on-surface text-sm">Automated Submission Reminder Dispatched</span>
+                <span class="font-mono text-[11px] text-on-surface-variant">Today 18:15 UTC</span>
+              </div>
+              <p class="text-on-surface-variant">Grade 12 Biology draft missing in semester folder. Automated submission reminder email sent to Teacher Choi.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex items-center justify-between">
+        <button class="px-3.5 py-1.5 bg-surface-container-lowest border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center gap-1.5" onclick="showToast('Audit log export downloaded.', 'success')">
+          <span class="material-symbols-outlined text-[16px] text-primary">download</span>
+          Export Audit Trail (CSV)
+        </button>
+        <button class="px-5 py-1.5 bg-primary text-on-primary text-xs font-bold rounded-lg" onclick="closeAuditLogsModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 4: SYSTEM SETTINGS & GOOGLE OAUTH SETUP MODAL ================= -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden transition-all" id="settingsModal" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm transition-opacity" onclick="closeSettingsModal()"></div>
+
+    <div class="relative w-full max-w-3xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10 border border-surface-container">
+      <div class="px-6 py-4 bg-primary text-on-primary flex items-center justify-between gap-4 shrink-0 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[24px]">settings</span>
+          </div>
+          <div>
+            <h2 class="font-bold text-lg text-white">System Settings & Google OAuth Setup</h2>
+            <p class="text-xs text-surface-container-high">Configure Google Cloud Workspace credentials, active semester folder, and AI keys</p>
+          </div>
+        </div>
+        <button class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" onclick="closeSettingsModal()">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex flex-col gap-5 text-xs text-on-surface">
+
+        <!-- Setup Guide Box for Real Google Account -->
+        <div class="p-4 rounded-xl bg-surface-container-low border border-primary/30 flex flex-col gap-2.5">
+          <div class="flex items-center gap-2 text-primary font-bold text-sm">
+            <span class="material-symbols-outlined text-[20px]">vpn_key</span>
+            <span>How to Connect Your Real Google Account (OAuth 2.0)</span>
+          </div>
+          <p class="text-on-surface-variant leading-relaxed">
+            Google requires a registered <strong>OAuth 2.0 Client ID</strong> to authorize access to your Google Drive and Docs. Because your live app runs on Cloud Run, follow these 3 quick steps in your Google Cloud Console:
+          </p>
+          <ol class="list-decimal list-inside space-y-1.5 pl-1 text-on-surface font-medium leading-relaxed">
+            <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-primary underline font-bold">GCP Credentials Console</a> in your project <code>Monitoring-LessonPlan</code>.</li>
+            <li>Click <strong>[Create Credentials]</strong> &gt; <strong>[OAuth client ID]</strong> &gt; Application type: <strong>Web application</strong>.</li>
+            <li>Under <strong>Authorized redirect URIs</strong>, paste this exact callback URL:
+              <div class="mt-1 p-2 bg-surface-container-lowest rounded border border-surface-container font-mono text-[11px] text-primary flex items-center justify-between">
+                <span id="redirectUriDisplay">https://inspection-paper-923588298450.asia-northeast3.run.app/api/auth/google/callback</span>
+                <button onclick="copyRedirectUri()" class="text-primary hover:underline font-sans font-semibold text-[11px] flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[13px]">content_copy</span> Copy
+                </button>
+              </div>
+            </li>
+            <li>Add the generated <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> to your Cloud Run service environment variables, or enter them below.</li>
+          </ol>
+        </div>
+
+        <!-- Target Semester Folder ID -->
+        <div class="flex flex-col gap-1.5">
+          <label class="font-bold text-on-surface flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-primary">folder</span>
+            Default Semester Google Drive Folder ID
+          </label>
+          <input id="settingsFolderIdInput" type="text" class="h-10 px-3 bg-surface font-mono rounded-lg border border-surface-container focus:outline-none focus:border-primary shadow-inner" value="1A2b3C4d_LIS2025_ExamMid"/>
+          <span class="text-[11px] text-on-surface-variant">The root folder ID containing teacher midterm and final exam papers for this academic semester.</span>
+        </div>
+
+        <!-- Administrator Profile -->
+        <div class="flex flex-col gap-1.5">
+          <label class="font-bold text-on-surface flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-primary">account_circle</span>
+            Administrator School Email
+          </label>
+          <input type="text" readonly class="h-10 px-3 bg-surface font-mono rounded-lg border border-surface-container text-on-surface-variant" value="kyumun_hwang@liskorea.org"/>
+          <span class="text-[11px] text-on-surface-variant">Designated LIS Vice Principal administrator account.</span>
+        </div>
+
+        <!-- Mode Toggle -->
+        <div class="p-3.5 rounded-xl bg-surface-container-lowest border border-surface-container flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="font-bold text-sm text-on-surface">Active Operating Mode</span>
+            <span class="text-on-surface-variant text-[11px]">Toggle between Mock Simulation Mode and Real Google Workspace Mode</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="handleMockSignIn(); closeSettingsModal();" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-semibold text-xs">
+              Use Mock Mode
+            </button>
+            <button onclick="triggerRealGoogleLogin()" class="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-white font-semibold text-xs shadow-sm flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">login</span>
+              Sign in with Google
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex items-center justify-between">
+        <button class="px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface text-xs font-semibold rounded-lg" onclick="saveSettingsChanges()">
+          Save Settings
+        </button>
+        <button class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-lg" onclick="closeSettingsModal()">
           Close
         </button>
       </div>

@@ -14,8 +14,8 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 # In-memory session simulation for demonstration and single-user administrator
 _CURRENT_SESSION: dict[str, Optional[UserInfo]] = {
     "user": UserInfo(
-        email="vice.principal@liskorea.org",
-        name="Vice Principal",
+        email="kyumun_hwang@liskorea.org",
+        name="Vice Principal Kyumun Hwang",
         picture="",
         role="Vice Principal (Administrator)",
         auth_mode="mock",
@@ -47,13 +47,11 @@ def google_login() -> RedirectResponse:
     """Initiate Google OAuth 2.0 authorization code flow.
 
     Returns:
-        RedirectResponse to Google Accounts authentication.
+        RedirectResponse to Google Accounts authentication or back to app with notice.
     """
     if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
-        raise HTTPException(
-            status_code=400,
-            detail="Google OAuth credentials not configured in .env. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or use Mock Mode.",
-        )
+        # Gracefully redirect back with notice instead of raw 400 error page
+        return RedirectResponse(url="/?oauth_error=not_configured")
 
     client_config = {
         "web": {
@@ -119,8 +117,8 @@ def google_callback(code: str = Query(...)) -> RedirectResponse:
         profile = user_info_resp.json()
 
         user = UserInfo(
-            email=profile.get("email", "unknown@lis.ac.kr"),
-            name=profile.get("name", "LIS Vice Principal"),
+            email=profile.get("email", "kyumun_hwang@liskorea.org"),
+            name=profile.get("name", "Vice Principal Kyumun Hwang"),
             picture=profile.get("picture", ""),
             role="Vice Principal (Administrator)",
             auth_mode="google",
@@ -144,8 +142,8 @@ def mock_login() -> AuthStatusResponse:
         AuthStatusResponse with mock session.
     """
     user = UserInfo(
-        email="vice.principal@liskorea.org",
-        name="Vice Principal",
+        email="kyumun_hwang@liskorea.org",
+        name="Vice Principal Kyumun Hwang",
         picture="",
         role="Vice Principal (Administrator)",
         auth_mode="mock",

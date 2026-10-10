@@ -158,9 +158,13 @@
             </span>
             <input class="w-full h-10 pl-9 pr-3 bg-surface font-mono text-sm text-on-surface rounded-lg border border-surface-container focus:outline-none focus:border-primary shadow-inner" id="folderIdInput" type="text" value="1A2b3C4d_LIS2025_ExamMid" placeholder="Enter Google Drive Folder ID..."/>
           </div>
-          <button id="btnSyncFolder" class="h-10 px-5 bg-primary hover:bg-primary-container text-on-primary text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shrink-0 shadow-sm disabled:opacity-60">
+          <button id="btnSyncFolder" class="h-10 px-4 bg-primary hover:bg-primary-container text-on-primary text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shrink-0 shadow-sm disabled:opacity-60">
             <span id="btnSyncFolderIcon" class="material-symbols-outlined text-[18px]">sync</span>
             <span id="btnSyncFolderText">Sync Folder & Files</span>
+          </button>
+          <button id="btnTopStartInspection" onclick="openAiBatchModal()" class="h-10 px-4 bg-secondary hover:opacity-90 text-on-primary text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-all shrink-0 shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">psychology</span>
+            <span>Start AI Inspection</span>
           </button>
         </div>
 
@@ -244,6 +248,10 @@
             </div>
             <button class="h-9 px-3 bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm" onclick="showToast('Exporting CSV inspection report...', 'info')">
               <span class="material-symbols-outlined text-[16px]">download</span>Export (CSV)
+            </button>
+            <button class="h-9 px-3.5 bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm" onclick="openAiBatchModal()">
+              <span class="material-symbols-outlined text-[16px]">psychology</span>
+              <span>Run AI Quality Audit</span>
             </button>
           </div>
         </div>

@@ -5,8 +5,9 @@ import uvicorn
 from app.core.config import settings
 
 if __name__ == "__main__":
-    # Google Cloud Run automatically injects the PORT environment variable (default: 8080)
-    port = int(os.environ.get("PORT", settings.PORT))
+    # Google Cloud Run automatically injects the PORT environment variable
+    port_env = os.environ.get("PORT")
+    port = int(port_env) if port_env else settings.PORT
     host = os.environ.get("HOST", settings.HOST)
     is_dev = settings.APP_ENV.lower() == "development"
 

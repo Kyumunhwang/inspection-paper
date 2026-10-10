@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>등대글로벌스쿨 LIS 시험지 모니터링 시스템 - Google Docs 파싱 연동 시뮬레이션</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#00236f',
+            'primary-container': '#1e3a8a',
+            'on-primary': '#ffffff',
+            secondary: '#006a63',
+            'secondary-container': '#99efe5',
+            'secondary-fixed': '#9cf2e8',
+            'on-secondary-fixed-variant': '#00504a',
+            background: '#f8f9ff',
+            surface: '#f8f9ff',
+            'surface-container-lowest': '#ffffff',
+            'surface-container-low': '#eff4ff',
+            'surface-container': '#e6eeff',
+            'surface-container-high': '#dce9ff',
+            'surface-container-highest': '#d5e3fc',
+            'on-surface': '#0d1c2e',
+            'on-surface-variant': '#444651',
+            'outline-variant': '#c5c5d3',
+            error: '#ba1a1a',
+            'error-container': '#ffdad6',
+            'on-error-container': '#93000a',
+            tertiary: '#763300',
+            'tertiary-fixed': '#ffdbca',
+            'tertiary-container': '#ff8e49'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-surface-container shadow-sm">
+    <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">verified_user</span>
+          </div>
+          <span class="font-bold text-lg text-primary tracking-tight">등대글로벌스쿨 LIS 시험지 모니터링 시스템</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+          <a href="#" class="px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary">모니터링 대시보드</a>
+          <a href="#" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">감사 로그</a>
+          <a href="#" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">보안 설정</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5 bg-surface-container-lowest px-3 py-1.5 rounded-xl border border-surface-container shadow-sm">
+          <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+          <div class="text-left text-xs">
+            <div class="font-semibold text-on-surface">교감 선생님 (관리자)</div>
+            <div class="text-on-surface-variant font-mono text-[11px]">vice.principal@lis.ac.kr</div>
+          </div>
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary ml-1">
+            <span class="material-symbols-outlined text-[18px]">person</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6 flex flex-col gap-6">
+
+    <!-- Section 1: Google OAuth & Drive Folder Sync Bar -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Subcard 1: Auth State -->
+      <div class="lg:col-span-5 bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[22px]">account_circle</span>
+            <span class="font-bold text-base text-on-surface">Google Workspace 인증 상태</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            OAuth 2.0 연동됨
+          </span>
+        </div>
+        <div class="bg-surface-container-low p-3 rounded-xl flex items-center justify-between my-3">
+          <div class="flex flex-col">
+            <span class="text-xs text-on-surface-variant">인증된 교감 관리자 계정</span>
+            <span class="font-mono text-sm text-primary font-semibold">vice.principal@liskorea.org</span>
+          </div>
+          <span class="px-2.5 py-1 bg-surface-container-lowest text-primary text-xs font-semibold rounded-md shadow-sm">
+            교감 권한 (Full Audit)
+          </span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-on-surface-variant">
+          <span class="flex items-center gap-1 text-secondary">
+            <span class="material-symbols-outlined text-[16px]">verified</span>
+            Google Drive & Docs API v3/v1 활성화됨
+          </span>
+          <button class="px-3 py-1 bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium rounded transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">logout</span>
+            로그아웃
+          </button>
+        </div>
+      </div>
+
+      <!-- Subcard 2: Google Drive Folder Sync Input -->
+      <div class="lg:col-span-7 bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[22px]">folder_managed</span>
+            <span class="font-bold text-base text-on-surface">2025학년도 1학기 중간고사 시험지 폴더 지정</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-primary text-xs font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            동기화 완료: 2분 전
+          </span>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2.5 my-3">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">key</span>
+            </span>
+            <input class="w-full h-10 pl-9 pr-3 bg-surface font-mono text-sm text-on-surface rounded-lg border border-surface-container focus:outline-none focus:border-primary shadow-inner" id="folderIdInput" type="text" value="1A2b3C4d_LIS2025_ExamMid"/>
+          </div>
+          <button class="h-10 px-5 bg-primary hover:bg-primary-container text-on-primary text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shrink-0 shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">sync</span>
+            폴더 연동 및 파일 동기화
+          </button>
+        </div>
+        <div class="flex flex-wrap items-center justify-between text-xs text-on-surface-variant">
+          <span class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px] text-primary">folder_open</span>
+            폴더 경로: <code class="font-mono text-on-surface font-semibold">LIS_Drive / 2025_Spring / Midterm_Official</code>
+          </span>
+          <span class="font-mono text-on-surface-variant">Folder ID: 1A2b3C4d_LIS2025_ExamMid</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Metric Overview Strip (3-Cards) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-on-surface-variant font-semibold">총 시험 대상 과목</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-3xl font-extrabold text-primary">12</span>
+            <span class="text-xs text-on-surface-variant">개 과목 등록</span>
+          </div>
+          <div class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px] text-primary">school</span>
+            전체 학년 (G9 ~ G12) 포괄
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[28px]">assignment</span>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-on-surface-variant font-semibold">시험지 업로드 현황</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-3xl font-extrabold text-secondary">10</span>
+            <span class="text-xs text-on-surface-variant">/ 12 과목 (83.3%)</span>
+          </div>
+          <div class="w-36 h-2 bg-surface-container rounded-full mt-2.5 overflow-hidden">
+            <div class="h-full bg-secondary rounded-full" style="width: 83.3%;"></div>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-secondary">
+          <span class="material-symbols-outlined text-[28px]">cloud_done</span>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-on-surface-variant font-semibold">교감 점검 및 최종 승인</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-3xl font-extrabold text-primary-container">6</span>
+            <span class="text-xs text-on-surface-variant">/ 10 업로드 건 (60.0%)</span>
+          </div>
+          <div class="text-xs text-error mt-2 flex items-center gap-1 font-medium">
+            <span class="material-symbols-outlined text-[15px]">pending_actions</span>
+            미점검 4건 (조정 권고 2건 포함)
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[28px]">rule_folder</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Monitoring Matrix Table (PRD [F2], rules.md) -->
+    <div class="bg-surface-container-lowest rounded-2xl border border-surface-container shadow-sm overflow-hidden flex flex-col">
+      <!-- Filter & Action Header -->
+      <div class="p-5 flex flex-col gap-3 border-b border-surface-container bg-surface-container-lowest">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-[24px]">table_chart</span>
+            <h2 class="font-bold text-lg text-on-surface">시험지 감리 및 실시간 점검 리스트</h2>
+            <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono text-xs font-semibold" id="rowCountBadge">Total 5 rows</span>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="relative">
+              <input class="h-9 pl-9 pr-3 bg-surface text-xs font-medium text-on-surface rounded-lg border border-surface-container focus:outline-none focus:border-primary w-60 shadow-inner" id="tableSearchInput" oninput="filterRows()" placeholder="과목, 교사, 파일명 검색..." type="text"/>
+              <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[16px] text-on-surface-variant">search</span>
+            </div>
+            <button class="h-9 px-3 bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm" onclick="alert('CSV 리포트를 생성하여 다운로드합니다.')">
+              <span class="material-symbols-outlined text-[16px]">download</span>내보내기 (CSV)
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Buttons Strip -->
+        <div class="flex items-center gap-2 flex-wrap pt-1">
+          <div class="inline-flex items-center p-1 bg-surface-container rounded-xl gap-1">
+            <button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all" id="filterAllBtn" onclick="setActiveFilter('all')">
+              <span class="material-symbols-outlined text-[15px]">list_alt</span>전체 보기 <span class="px-1.5 py-0.2 rounded-full bg-white/20 text-[11px] font-mono">5</span>
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-all" id="filterWarningBtn" onclick="setActiveFilter('warning')">
+              <span class="material-symbols-outlined text-[15px] text-error">warning</span>점검 필요/경고만 보기 <span class="px-1.5 py-0.2 rounded-full bg-error-container text-on-error-container text-[11px] font-mono font-bold">4건</span>
+            </button>
+          </div>
+
+          <div class="h-4 w-[1px] bg-outline-variant mx-1 hidden sm:block"></div>
+
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors flex items-center gap-1" id="filterPillUnchecked" onclick="setActiveFilter('unchecked')">
+              <span class="material-symbols-outlined text-[14px]">hourglass_empty</span>미점검 (PDF 미생성)
+            </button>
+            <button class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors flex items-center gap-1" id="filterPillScore" onclick="setActiveFilter('score')">
+              <span class="w-1.5 h-1.5 rounded-full bg-error"></span>배점 경고
+            </button>
+            <button class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors flex items-center gap-1" id="filterPillMissing" onclick="setActiveFilter('missing')">
+              <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>미제출
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Wrapper -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" id="examMonitorTable">
+          <thead>
+            <tr class="bg-surface-container-low text-on-surface-variant text-xs font-semibold uppercase tracking-wider h-11 border-b border-surface-container">
+              <th class="py-3 px-4">교과목</th>
+              <th class="py-3 px-3">담당교사</th>
+              <th class="py-3 px-4">시험지명</th>
+              <th class="py-3 px-3">시험날짜</th>
+              <th class="py-3 px-3 text-center">시험지 원문 & 파싱</th>
+              <th class="py-3 px-3 text-center">업로드</th>
+              <th class="py-3 px-4">시험 QUALITY (배점 비율 검증)</th>
+              <th class="py-3 px-3 text-center">점검완료 유무</th>
+              <th class="py-3 px-4">메모 / 특이사항</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container text-sm text-on-surface" id="tableBody">
+
+            <!-- Row 1: Grade 10 English Literature (Approved) -->
+            <tr class="hover:bg-surface transition-all h-16" data-status="normal completed" data-subject="Grade 10 English Literature" data-teacher="김선생" data-filename="2025_G10_Eng_Midterm.gdoc">
+              <td class="py-3 px-4 font-bold whitespace-nowrap">Grade 10 English Literature</td>
+              <td class="py-3 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium text-xs">김선생</span>
+              </td>
+              <td class="py-3 px-4 font-mono text-xs text-primary font-semibold whitespace-nowrap">2025_G10_Eng_Midterm.gdoc</td>
+              <td class="py-3 px-3 font-mono text-xs text-on-surface-variant whitespace-nowrap">2025-04-22</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <a href="#drive-link-1" class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-primary text-xs font-medium inline-flex items-center gap-0.5">
+                    열기 <span class="material-symbols-outlined text-[13px]">north_east</span>
+                  </a>
+                  <button onclick="openDocsParsingModal('g10_eng')" class="px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-semibold inline-flex items-center gap-1 transition-all shadow-sm" title="구글 독스 원문 텍스트 파싱 및 메타데이터 추출 검사">
+                    <span class="material-symbols-outlined text-[14px]">description</span>
+                    <span>Docs 파싱</span>
+                  </button>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-bold text-xs">O</span>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex flex-col gap-0.5">
+                  <span class="font-mono text-xs text-on-surface">Closed 25%, Open 50%, Essay 25%</span>
+                  <span class="inline-flex items-center gap-1 text-[11px] text-secondary font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>배점 비율 기준 정상 충족
+                  </span>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-semibold">
+                  <span class="material-symbols-outlined text-[14px]">picture_as_pdf</span>점검완료 (PDF 존재)
+                </span>
+              </td>
+              <td class="py-3 px-4 text-xs text-on-surface-variant">
+                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-medium">PDF 최종 승인 완료</span>
+              </td>
+            </tr>
+
+            <!-- Row 2: Grade 11 Pre-Calculus (Essay ratio exceeded warning) -->
+            <tr class="hover:bg-surface transition-all h-16 bg-error-container/15" data-status="warning score unchecked incomplete" data-subject="Grade 11 Pre-Calculus" data-teacher="박선생" data-filename="2025_G11_Math_Midterm.gdoc">
+              <td class="py-3 px-4 font-bold whitespace-nowrap">Grade 11 Pre-Calculus</td>
+              <td class="py-3 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium text-xs">박선생</span>
+              </td>
+              <td class="py-3 px-4 font-mono text-xs text-primary font-semibold whitespace-nowrap">2025_G11_Math_Midterm.gdoc</td>
+              <td class="py-3 px-3 font-mono text-xs text-on-surface-variant whitespace-nowrap">2025-04-23</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <a href="#drive-link-2" class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-primary text-xs font-medium inline-flex items-center gap-0.5">
+                    열기 <span class="material-symbols-outlined text-[13px]">north_east</span>
+                  </a>
+                  <button onclick="openDocsParsingModal('g11_math')" class="px-2.5 py-1 rounded-lg bg-error-container text-error hover:bg-error hover:text-white text-xs font-semibold inline-flex items-center gap-1 transition-all shadow-sm" title="배점 비율 초과 경고 원문 파싱 검사">
+                    <span class="material-symbols-outlined text-[14px]">description</span>
+                    <span>Docs 파싱</span>
+                  </button>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-bold text-xs">O</span>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex flex-col gap-0.5">
+                  <span class="font-mono text-xs text-error font-bold">Essay 비율 45%</span>
+                  <span class="inline-flex items-center gap-1 text-[11px] text-error font-semibold">
+                    <span class="material-symbols-outlined text-[13px]">warning</span>기준(20~40%) 초과 경고
+                  </span>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-xs font-semibold">
+                  <span class="material-symbols-outlined text-[14px]">cancel</span>미완료 (PDF 없음)
+                </span>
+              </td>
+              <td class="py-3 px-4 text-xs font-semibold text-error">서술형 배점 조정 필요</td>
+            </tr>
+
+            <!-- Row 3: Grade 9 World History (Approved) -->
+            <tr class="hover:bg-surface transition-all h-16" data-status="warning unchecked incomplete" data-subject="Grade 9 World History" data-teacher="이선생" data-filename="2025_G9_Hist_Midterm.docx">
+              <td class="py-3 px-4 font-bold whitespace-nowrap">Grade 9 World History</td>
+              <td class="py-3 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium text-xs">이선생</span>
+              </td>
+              <td class="py-3 px-4 font-mono text-xs text-primary font-semibold whitespace-nowrap">2025_G9_Hist_Midterm.docx</td>
+              <td class="py-3 px-3 font-mono text-xs text-on-surface-variant whitespace-nowrap">2025-04-24</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <a href="#drive-link-3" class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-primary text-xs font-medium inline-flex items-center gap-0.5">
+                    열기 <span class="material-symbols-outlined text-[13px]">north_east</span>
+                  </a>
+                  <button onclick="openDocsParsingModal('g9_hist')" class="px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-semibold inline-flex items-center gap-1 transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[14px]">description</span>
+                    <span>Docs 파싱</span>
+                  </button>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-bold text-xs">O</span>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex flex-col gap-0.5">
+                  <span class="font-mono text-xs text-on-surface">Closed 20%, Open 50%, Essay 30%</span>
+                  <span class="inline-flex items-center gap-1 text-[11px] text-secondary font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>비율 규정 부합
+                  </span>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface text-xs font-medium">
+                  <span class="material-symbols-outlined text-[14px]">hourglass_empty</span>미완료 (PDF 없음)
+                </span>
+              </td>
+              <td class="py-3 px-4 text-xs text-on-surface-variant">AI 문항 난이도 적절 판정</td>
+            </tr>
+
+            <!-- Row 4: Grade 12 Biology (Missing Submission) -->
+            <tr class="hover:bg-surface transition-all h-16 bg-surface-container-low/40" data-status="warning missing unsubmitted unchecked incomplete" data-subject="Grade 12 Biology" data-teacher="최선생" data-filename="-">
+              <td class="py-3 px-4 font-bold whitespace-nowrap text-on-surface-variant">Grade 12 Biology</td>
+              <td class="py-3 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium text-xs">최선생</span>
+              </td>
+              <td class="py-3 px-4 font-mono text-xs text-on-surface-variant whitespace-nowrap">-</td>
+              <td class="py-3 px-3 font-mono text-xs text-on-surface-variant whitespace-nowrap">-</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <button onclick="openDocsParsingModal('g12_bio')" class="px-2.5 py-1 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface-variant text-xs font-medium inline-flex items-center gap-1 transition-all">
+                  <span class="material-symbols-outlined text-[14px]">error_outline</span>
+                  <span>상태확인</span>
+                </button>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-error-container text-on-error-container font-bold text-xs">X</span>
+              </td>
+              <td class="py-3 px-4 text-xs text-on-surface-variant">미제출 상태 (분석 불가)</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-xs">미완료</span>
+              </td>
+              <td class="py-3 px-4 text-xs text-error font-medium flex items-center gap-1 mt-4">
+                <span class="material-symbols-outlined text-[14px]">notifications_active</span>4/18까지 제출 요청 알림 발송
+              </td>
+            </tr>
+
+            <!-- Row 5: Grade 10 Korean Literature (MCQ Flaw) -->
+            <tr class="hover:bg-surface transition-all h-16" data-status="warning option_warning" data-subject="Grade 10 Korean Literature" data-teacher="정선생" data-filename="2025_G10_Kor_Midterm.gdoc">
+              <td class="py-3 px-4 font-bold whitespace-nowrap">Grade 10 Korean Literature</td>
+              <td class="py-3 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium text-xs">정선생</span>
+              </td>
+              <td class="py-3 px-4 font-mono text-xs text-primary font-semibold whitespace-nowrap">2025_G10_Kor_Midterm.gdoc</td>
+              <td class="py-3 px-3 font-mono text-xs text-on-surface-variant whitespace-nowrap">2025-04-25</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <a href="#drive-link-5" class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-primary text-xs font-medium inline-flex items-center gap-0.5">
+                    열기 <span class="material-symbols-outlined text-[13px]">north_east</span>
+                  </a>
+                  <button onclick="openDocsParsingModal('g10_kor')" class="px-2.5 py-1 rounded-lg bg-tertiary-fixed text-tertiary font-semibold hover:bg-tertiary hover:text-white text-xs inline-flex items-center gap-1 transition-all shadow-sm" title="MCQ 4지선다 옵션 미달 파싱 확인">
+                    <span class="material-symbols-outlined text-[14px]">description</span>
+                    <span>Docs 파싱</span>
+                  </button>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-bold text-xs">O</span>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex flex-col gap-0.5">
+                  <span class="font-mono text-xs font-semibold text-on-surface">MCQ 4지선다 옵션 미달 문항 1건</span>
+                  <span class="inline-flex items-center gap-1 text-[11px] text-tertiary font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>3번 문항 보기 4개 미만 (보완 권고)
+                  </span>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-semibold">
+                  <span class="material-symbols-outlined text-[14px]">picture_as_pdf</span>점검완료 (PDF 존재)
+                </span>
+              </td>
+              <td class="py-3 px-4 text-xs font-medium text-on-surface">3번 문항 보기 수정 확인 요망</td>
+            </tr>
+
+            <!-- Empty State Row -->
+            <tr class="hidden" id="emptyStateRow">
+              <td class="py-12 px-4 text-center bg-surface-container-lowest" colspan="9">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-4xl text-outline-variant">search_off</span>
+                  <p class="font-bold text-base text-on-surface">일치하는 시험지 데이터가 없습니다</p>
+                  <p class="text-xs text-on-surface-variant">검색어나 필터 조건을 변경하여 다시 확인해 주세요.</p>
+                  <button class="mt-2 px-3 py-1 bg-surface-container-high hover:bg-surface-variant text-primary rounded-lg text-xs font-semibold" onclick="resetFilters()">
+                    필터 초기화
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Action & Status Strip -->
+      <div class="p-4 bg-surface-container-low border-t border-surface-container flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+          <span class="material-symbols-outlined text-[18px] text-primary">info</span>
+          <span>실시간 필터 결과: <strong class="text-primary font-mono font-semibold" id="footerActiveFilterText">전체 과목 (5개)</strong> 표시 중</span>
+        </div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <!-- Main Google Docs Text Parsing Simulator Trigger Button -->
+          <button class="px-4 py-2 bg-surface-container-lowest hover:bg-surface-container border border-primary/40 text-primary text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-sm" onclick="openDocsParsingModal('g10_eng')">
+            <span class="material-symbols-outlined text-[18px] text-primary">description</span>
+            <span>📄 Google Docs 텍스트 파싱 시뮬레이션</span>
+          </button>
+
+          <!-- AI Batch Quality Modal Trigger Button -->
+          <button class="px-4 py-2 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-sm" onclick="openAiBatchModal()">
+            <span class="material-symbols-outlined text-[18px]">psychology</span>
+            <span>✨ AI 일괄 검증 실행</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= MODAL 1: GOOGLE DOCS TEXT PARSING & EXTRACTION SIMULATION (PRD [F3]) ================= -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden transition-all" id="docsParsingModal" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm transition-opacity" onclick="closeDocsParsingModal()"></div>
+
+    <!-- Modal Box -->
+    <div class="relative w-full max-w-6xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10 border border-surface-container">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-start justify-between gap-4 shrink-0 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
+            <span class="material-symbols-outlined text-[24px] text-secondary-fixed">description</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h2 class="font-bold text-lg text-white tracking-tight">Google Docs API (v3 Export) 텍스트 파싱 & 메타데이터 추출 시뮬레이터</h2>
+              <span class="px-2.5 py-0.5 rounded-full bg-secondary text-on-secondary text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                Drive text/plain v3 연동
+              </span>
+            </div>
+            <p class="text-xs text-surface-container-high mt-0.5">
+              prd.md [F3], rules.md 3-Step 기준: 구글 독스 원문 텍스트 스트림 추출 및 정규식 표지/배점/문항 규격 실시간 구조화 검증
+            </p>
+          </div>
+        </div>
+        <button class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors shrink-0" onclick="closeDocsParsingModal()">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+
+      <!-- Subject Tabs Toolbar -->
+      <div class="px-6 py-2.5 bg-surface-container-low border-b border-surface-container flex flex-col md:flex-row md:items-center justify-between gap-2.5 shrink-0">
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0" id="docsSubjectTabs">
+          <button class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all bg-primary text-on-primary shadow-sm" id="tabBtn-g10_eng" onclick="switchDocsParsingSubject('g10_eng')">
+            <span class="material-symbols-outlined text-[14px]">check_circle</span>
+            <span>Grade 10 English</span>
+            <span class="text-[10px] opacity-75 font-mono">.gdoc</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface" id="tabBtn-g11_math" onclick="switchDocsParsingSubject('g11_math')">
+            <span class="material-symbols-outlined text-[14px] text-error">warning</span>
+            <span>Grade 11 Pre-Calc</span>
+            <span class="text-[10px] text-error font-bold font-mono">배점경고</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface" id="tabBtn-g10_kor" onclick="switchDocsParsingSubject('g10_kor')">
+            <span class="material-symbols-outlined text-[14px] text-tertiary">report_problem</span>
+            <span>Grade 10 국어</span>
+            <span class="text-[10px] text-tertiary font-bold font-mono">선택지누락</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface" id="tabBtn-g9_hist" onclick="switchDocsParsingSubject('g9_hist')">
+            <span class="material-symbols-outlined text-[14px]">history_edu</span>
+            <span>Grade 9 World Hist</span>
+            <span class="text-[10px] opacity-75 font-mono">.docx</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface-variant" id="tabBtn-g12_bio" onclick="switchDocsParsingSubject('g12_bio')">
+            <span class="material-symbols-outlined text-[14px] text-outline-variant">cancel</span>
+            <span>Grade 12 Bio (미제출)</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-1.5 text-xs text-on-surface-variant font-mono px-2.5 py-1 bg-surface-container rounded-lg">
+            <span class="material-symbols-outlined text-[14px] text-secondary">timer</span>
+            <span id="metricSizeText">크기: 4.2 KB</span>
+            <span>·</span>
+            <span id="metricLatencyText">파싱: 118ms</span>
+          </div>
+          <button class="px-2.5 py-1 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors" onclick="toggleParsedJsonView()">
+            <span class="material-symbols-outlined text-[15px]">code</span>
+            <span id="btnJsonToggleLabel">JSON 보기</span>
+          </button>
+          <button class="px-3 py-1 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" id="btnReParseDocs" onclick="reRunDocsParsing()">
+            <span class="material-symbols-outlined text-[15px]" id="reParseIcon">sync</span>
+            <span>재파싱 실행</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scroll Area -->
+      <div class="overflow-y-auto px-6 py-4 flex-1 flex flex-col gap-4 bg-background">
+
+        <!-- Re-parsing Progress Bar (Hidden by default) -->
+        <div class="hidden p-3 bg-primary/5 rounded-xl border border-primary/20 flex flex-col gap-1.5 transition-all" id="parsingProgressContainer">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-primary flex items-center gap-1.5" id="parsingStatusText">
+              <span class="material-symbols-outlined text-[15px] animate-spin">progress_activity</span>
+              Google Docs text/plain 스트림 버퍼 수신 중...
+            </span>
+            <span class="font-mono text-xs text-primary font-bold" id="parsingProgressPercent">45%</span>
+          </div>
+          <div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+            <div class="h-full bg-primary rounded-full transition-all duration-300 ease-out" id="parsingProgressBarTrack" style="width: 45%;"></div>
+          </div>
+        </div>
+
+        <!-- RAW JSON VIEW (Toggleable) -->
+        <div class="hidden bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm" id="rawJsonViewContainer">
+          <div class="flex items-center justify-between pb-2 border-b border-surface-container mb-2">
+            <span class="font-bold text-xs text-primary flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">data_object</span>
+              구조화 파싱 JSON Schema 결과 ({ metadata, score_breakdown, quality_rules })
+            </span>
+            <button class="text-on-surface-variant hover:text-on-surface text-xs font-medium flex items-center gap-1" onclick="copyParsedJson()">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              JSON 복사
+            </button>
+          </div>
+          <pre class="bg-surface-container-low p-3.5 rounded-lg font-mono text-xs text-on-surface overflow-x-auto max-h-56 leading-relaxed" id="rawJsonPreBlock"></pre>
+        </div>
+
+        <!-- Two-Column Split Inspector -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Left Column: Raw Text Stream from Google Docs Export -->
+          <div class="lg:col-span-6 flex flex-col gap-2 bg-surface-container-lowest p-4 rounded-xl border border-surface-container shadow-sm">
+            <div class="flex items-center justify-between pb-2 border-b border-surface-container">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">raw_on</span>
+                <h3 class="font-bold text-sm text-on-surface">Google Docs 원본 텍스트 스트림 (text/plain)</h3>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-mono text-[11px]" id="mimeTypeText">MIME: text/plain (UTF-8)</span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-on-surface-variant">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary">feed</span>
+                파일명: <strong class="text-on-surface font-mono font-medium" id="leftColumnFileName">2025_G10_Eng_Midterm.gdoc</strong>
+              </span>
+              <span class="font-mono text-xs" id="characterCountText">글자 수: 2,840자</span>
+            </div>
+
+            <!-- Text Box -->
+            <div class="relative mt-1">
+              <textarea class="w-full h-[430px] p-3.5 bg-surface-container-low font-mono text-xs text-on-surface rounded-lg border border-surface-container leading-relaxed focus:outline-none resize-none shadow-inner" id="rawTextStreamBox" readonly></textarea>
+              <div class="absolute bottom-2.5 right-3 text-[11px] font-mono text-on-surface-variant bg-surface-container-lowest/80 px-2 py-0.5 rounded backdrop-blur">
+                Google Drive Stream
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 text-xs text-on-surface-variant border-t border-surface-container">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px] text-secondary">verified_user</span>
+                문서 해시: <code class="font-mono text-[11px]" id="docHashText">sha256: 7f8a1...d4e2</code>
+              </span>
+              <button class="text-primary hover:underline font-semibold text-xs flex items-center gap-0.5" onclick="copyRawTextStream()">
+                <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                텍스트 복사
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Regex & AI Structured Extraction (prd.md [F3] & rules.md) -->
+          <div class="lg:col-span-6 flex flex-col gap-4 bg-surface-container-lowest p-4 rounded-xl border border-surface-container shadow-sm">
+            <div class="flex items-center justify-between pb-2 border-b border-surface-container">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary text-[20px]">account_tree</span>
+                <h3 class="font-bold text-sm text-on-surface">정규식 & 구조화 메타데이터 추출 결과</h3>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold" id="parsingStatusBadge">
+                규칙 적합 100%
+              </span>
+            </div>
+
+            <!-- Step 1: Cover Page Metadata Extraction -->
+            <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">badge</span>
+                  [Step 1] 표지 메타데이터 자동 추출 결과
+                </span>
+                <span class="text-[11px] font-mono text-secondary font-bold" id="step1ScoreBadge">6/6 항목 일치</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">교과목명 (Subject)</span>
+                  <span class="font-bold text-on-surface font-mono" id="extractedSubject">Grade 10 English Literature</span>
+                </div>
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">담당교사 (Teacher)</span>
+                  <span class="font-bold text-on-surface" id="extractedTeacher">김선생 (LIS 공식 교원)</span>
+                </div>
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">시험일시 (Exam Date)</span>
+                  <span class="font-bold text-on-surface font-mono" id="extractedDate">2025-04-22</span>
+                </div>
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">총 배점 (Total Score)</span>
+                  <span class="font-bold text-primary font-mono" id="extractedTotalScore">100 / 100 pts</span>
+                </div>
+              </div>
+
+              <!-- Checklist for 6 Mandatory Cover Header Items -->
+              <div class="mt-1 pt-2 border-t border-surface-container">
+                <span class="text-[11px] font-semibold text-on-surface-variant mb-1.5 block">rules.md 규정 필수 표지 6대 요소 검출 상태:</span>
+                <div class="grid grid-cols-3 gap-1.5 text-[11px] font-medium" id="mandatoryHeaderChecklist">
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Teacher</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Date</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Subject</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Grade</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Student Name</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Score Table</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Points & Question Distribution Auto-Calculation -->
+            <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">pie_chart</span>
+                  [Step 2] 배점 및 문항 통계 자동 분석 (중간고사 규정 비교)
+                </span>
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded" id="scoreGuidelineBadge">가이드라인 준수</span>
+              </div>
+
+              <!-- Ratio Breakdown Multi-bar -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-xs font-mono">
+                  <span id="scoreBreakdownSummary">Closed 25pts (25%) · Open 50pts (50%) · Essay 25pts (25%)</span>
+                  <span class="font-bold text-primary" id="scoreSumTotal">합계: 100점</span>
+                </div>
+                <div class="w-full h-3 rounded-full bg-surface-container-high overflow-hidden flex" id="scoreRatioBarContainer">
+                  <div class="bg-primary h-full transition-all duration-300" id="barClosed" style="width: 25%;" title="Closed 25%"></div>
+                  <div class="bg-secondary h-full transition-all duration-300" id="barOpen" style="width: 50%;" title="Open 50%"></div>
+                  <div class="bg-tertiary-container h-full transition-all duration-300" id="barEssay" style="width: 25%;" title="Essay 25%"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-on-surface-variant">
+                  <div class="flex items-center gap-2.5">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary"></span> 객관식 (10~30%)</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> 단답형 (~50%)</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary-container"></span> 서술형 (20~40%)</span>
+                  </div>
+                  <span class="font-mono text-[11px]" id="totalQuestionsCount">총 문항수: 21문항</span>
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-lg bg-surface-container-lowest border border-surface-container text-xs" id="scoreAuditMessage">
+                <span class="text-secondary font-medium flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px]">verified</span>
+                  서술형(Essay) 배점이 25%로 기준(20~40%)에 정상 충족됩니다.
+                </span>
+              </div>
+            </div>
+
+            <!-- Step 3: Question Specification & Option Quality Check -->
+            <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">checklist_rtl</span>
+                  [Step 3] 문항 규격 및 4지선다 옵션 검출
+                </span>
+                <span class="text-[11px] font-semibold" id="step3StatusTag">결함 없음</span>
+              </div>
+
+              <div class="flex flex-col gap-1.5 text-xs">
+                <div class="flex items-center justify-between bg-surface-container-lowest p-2 rounded-lg border border-surface-container">
+                  <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[15px] text-secondary">check_circle</span>
+                    <span>객관식 문항 4지선다 (A/B/C/D 또는 ①②③④) 옵션 완성도</span>
+                  </span>
+                  <span class="font-mono text-secondary font-bold text-xs" id="step3McqStatus">전 문항 4개 보기 완비</span>
+                </div>
+                <div class="flex items-center justify-between bg-surface-container-lowest p-2 rounded-lg border border-surface-container">
+                  <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[15px] text-secondary">check_circle</span>
+                    <span>배점 표기(pts) 누락 및 특수문자/수식 정규식 유효성</span>
+                  </span>
+                  <span class="font-mono text-secondary font-bold text-xs" id="step3PtsStatus">모든 문항 배점 기재 확인</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+          <span class="material-symbols-outlined text-[16px] text-primary">sync_saved_locally</span>
+          <span>Google Workspace Drive Export v3 동기화 연결 상태: 정상 가동 중</span>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button class="px-3.5 py-1.5 bg-surface-container-lowest hover:bg-surface-container border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" onclick="alert('파싱 감사 리포트를 JSON/CSV 형식으로 내보냅니다.')">
+            <span class="material-symbols-outlined text-[16px] text-primary">download</span>
+            <span>파싱 감사 리포트 내보내기</span>
+          </button>
+          <button class="px-5 py-1.5 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-lg transition-colors shadow-sm" onclick="closeDocsParsingModal()">
+            확인 및 닫기
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL 2: AI BATCH AUDIT QUALITY REPORT MODAL ================= -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden transition-all" id="aiBatchModal" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm transition-opacity" onclick="closeAiBatchModal()"></div>
+
+    <div class="relative w-full max-w-5xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10 border border-surface-container">
+      <div class="px-6 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-start justify-between gap-4 shrink-0 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
+            <span class="material-symbols-outlined text-[24px] text-secondary-fixed">auto_awesome</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-bold text-lg text-white tracking-tight">AI 시험지 일괄 검증 및 Quality 리포트</h2>
+              <span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary text-[11px] font-bold uppercase tracking-wider">rules.md Engine</span>
+            </div>
+            <p class="text-xs text-surface-container-high mt-0.5">
+              rules.md 검증 기준(표지 헤더, 배점 비율, 문항/난이도 인지 부하)에 기반한 전 과목 자동 분석
+            </p>
+          </div>
+        </div>
+        <button class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors shrink-0" onclick="closeAiBatchModal()">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto px-6 py-4 flex flex-col gap-4">
+        <!-- Progress Bar & Re-run Row -->
+        <div class="p-4 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[20px]">task_alt</span>
+              <span class="font-bold text-sm text-on-surface">검증 완료 (4/5 과목 완료 - 미제출 1건 제외)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs font-bold text-primary">100%</span>
+              <button class="px-3 py-1 bg-surface-container-lowest hover:bg-surface-container border border-outline-variant text-primary text-xs font-semibold rounded-lg flex items-center gap-1 transition-all shadow-sm" onclick="alert('전 과목 AI 검증을 다시 실행합니다.')">
+                <span class="material-symbols-outlined text-[15px]">restart_alt</span>
+                <span>검증 재실행</span>
+              </button>
+            </div>
+          </div>
+          <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-secondary to-primary rounded-full" style="width: 100%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-on-surface-variant text-[11px]">
+            <span>Gemini 1.5 Pro Audit Agent · LIS Guidelines v2.4</span>
+            <span>마지막 검증: 방금 전 (실시간 반영됨)</span>
+          </div>
+        </div>
+
+        <!-- Metric Strip Summary (4 Cards) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">검증 완료</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-primary">4</span>
+              <span class="text-xs text-on-surface-variant">/ 5 과목</span>
+            </div>
+            <span class="text-[11px] text-secondary font-medium mt-1">업로드 문서 100% 검증</span>
+          </div>
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">규칙 준수 정상</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-secondary">2</span>
+              <span class="text-xs text-on-surface-variant">과목 (적합)</span>
+            </div>
+            <span class="text-[11px] text-secondary font-medium mt-1">표지·배점·난이도 통과</span>
+          </div>
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">주의 / 수정 권고</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-error">2</span>
+              <span class="text-xs text-on-surface-variant">과목 (보완 요망)</span>
+            </div>
+            <span class="text-[11px] text-error font-medium mt-1">배점 초과 1 · 선택지 부족 1</span>
+          </div>
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">미검증 (미제출)</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-outline-variant">1</span>
+              <span class="text-xs text-on-surface-variant">과목</span>
+            </div>
+            <span class="text-[11px] text-outline-variant font-medium mt-1">G12 Biology</span>
+          </div>
+        </div>
+
+        <!-- Subject 3-Step Details -->
+        <div class="flex flex-col gap-3">
+          <div class="font-bold text-sm text-on-surface flex items-center gap-2 pb-1 border-b border-surface-container">
+            <span class="material-symbols-outlined text-primary text-[20px]">fact_check</span>
+            과목별 세부 감사 분석 리포트
+          </div>
+
+          <!-- Subject 1 -->
+          <div class="p-3.5 rounded-xl bg-surface-container-lowest border border-surface-container flex flex-col gap-2">
+            <div class="flex items-center justify-between pb-1.5 border-b border-surface-container-low">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-on-surface">Grade 10 English Literature</span>
+                <span class="px-2 py-0.5 rounded bg-surface-container text-xs text-on-surface-variant">김선생</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-bold">
+                승인 권고 - 적합
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+              <div class="p-2.5 bg-surface-container-low rounded-lg">
+                <strong class="text-primary block mb-0.5">[Step 1 표지]</strong>
+                정상 (필수 6요소 완비)
+              </div>
+              <div class="p-2.5 bg-surface-container-low rounded-lg">
+                <strong class="text-primary block mb-0.5">[Step 2 배점]</strong>
+                Closed 25%, Open 50%, Essay 25% (충족)
+              </div>
+              <div class="p-2.5 bg-surface-container-low rounded-lg">
+                <strong class="text-primary block mb-0.5">[Step 3 난이도]</strong>
+                적절 (인지 부하 규정 적정)
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject 2 -->
+          <div class="p-3.5 rounded-xl bg-error-container/15 border border-error/30 flex flex-col gap-2">
+            <div class="flex items-center justify-between pb-1.5 border-b border-error/20">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-on-surface">Grade 11 Pre-Calculus</span>
+                <span class="px-2 py-0.5 rounded bg-surface-container text-xs text-on-surface-variant">박선생</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container text-xs font-bold">
+                수정 권고 - 배점 초과
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+              <div class="p-2.5 bg-surface-container-low rounded-lg">
+                <strong class="text-primary block mb-0.5">[Step 1 표지]</strong>
+                정상 (필수 항목 완비)
+              </div>
+              <div class="p-2.5 bg-error-container/30 border border-error/20 rounded-lg">
+                <strong class="text-error block mb-0.5">[Step 2 배점] ⚠️ 초과</strong>
+                Essay 45% (규정 20~40% 초과) → 5%p 하향 권고
+              </div>
+              <div class="p-2.5 bg-surface-container-low rounded-lg">
+                <strong class="text-primary block mb-0.5">[Step 3 난이도]</strong>
+                다소 높음 (후반부 풀이 안배 검토 요망)
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject 3 -->
+          <div class="p-3.5 rounded-xl bg-tertiary-fixed/20 border border-tertiary-fixed flex flex-col gap-2">
+            <div class="flex items-center justify-between pb-1.5 border-b border-tertiary-fixed/40">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-on-surface">Grade 10 Korean Literature</span>
+                <span class="px-2 py-0.5 rounded bg-surface-container text-xs text-on-surface-variant">정선생</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-tertiary text-xs font-bold">
+                수정 권고 - 보기 누락
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+              <div class="p-2.5 bg-surface-container-low rounded-lg">
+                <strong class="text-primary block mb-0.5">[Step 1 표지]</strong>
+                정상 (LIS 국문 표지 준수)
+              </div>
+              <div class="p-2.5 bg-surface-container-low rounded-lg">
+                <strong class="text-primary block mb-0.5">[Step 2 배점]</strong>
+                Closed 30%, Open 40%, Essay 30% (정상)
+              </div>
+              <div class="p-2.5 bg-tertiary-fixed/40 border border-tertiary-container/30 rounded-lg">
+                <strong class="text-tertiary block mb-0.5">[Step 3 난이도/문항] ⚠️</strong>
+                3번 문항 4지선다 옵션 미달 (보기 3개)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex items-center justify-between">
+        <button class="px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center gap-1.5" onclick="alert('선생님들께 피드백 알림 메일을 일괄 전송했습니다.')">
+          <span class="material-symbols-outlined text-[16px] text-primary">mail</span>
+          교사별 피드백 자동 전송
+        </button>
+        <button class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-lg" onclick="closeAiBatchModal()">
+          확인 및 닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // Mock Data Store for Docs Text Parsing Simulation
+    const DOCS_PARSING_MOCK = {
+      g10_eng: {
+        fileName: '2025_G10_Eng_Midterm.gdoc',
+        size: '4.2 KB',
+        latency: '118ms',
+        charCount: '2,840자',
+        hash: 'sha256: 7f8a1...d4e2',
+        statusBadge: '규칙 적합 100%',
+        badgeClass: 'bg-secondary-fixed text-on-secondary-fixed-variant',
+        rawText: `=======================================================
+LIGHTHOUSE INTERNATIONAL SCHOOL (LIS)
+2024-2025 SEMESTER 1 MIDTERM EXAMINATION
+=======================================================
+[COVER / HEADER METADATA TABLE]
+Subject     : Grade 10 English Literature
+Instructor  : 김선생 (Teacher Kim)
+Exam Date   : 2025-04-22
+Grade Level : Grade 10
+Student Name: _______________________   Student ID: _________
+Total Points: 100 Points (Closed: 25pts / Open: 50pts / Essay: 25pts)
+
+SCORE SHEET:
++------------+-----------+------------+------------+
+| Closed(25) | Open(50)  | Essay(25)  | Total(100) |
++------------+-----------+------------+------------+
+|            |           |            |            |
++------------+-----------+------------+------------+
+
+INSTRUCTIONS:
+1. Ensure your name and student ID are clearly recorded above.
+2. Answer all multiple-choice questions on the separate OMR bubble card.
+3. For Short Answer & Essay questions, write legibly in the provided space.
+
+-------------------------------------------------------
+PART I. MULTIPLE CHOICE QUESTIONS (Closed Questions - 25 pts)
+-------------------------------------------------------
+Q1. [2 pts] What is the central symbolic motif of the green light in F. Scott Fitzgerald's 'The Great Gatsby'?
+  (A) Gatsby's unyielding hope and longing for Daisy Buchanan
+  (B) The corruption of the upper-class American dream
+  (C) The natural landscape of the Long Island Sound
+  (D) Daisy's wealth and societal status
+
+Q2. [2 pts] Which literary device is primarily utilized in the phrase 'So we beat on, boats against the current'?
+  (A) Hyperbole
+  (B) Extended Metaphor
+  (C) Onomatopoeia
+  (D) Synecdoche
+... [Questions 3 to 12 continued - Total 25 pts]
+
+-------------------------------------------------------
+PART II. OPEN / SHORT ANSWER QUESTIONS (Open Questions - 50 pts)
+-------------------------------------------------------
+Q13. [5 pts] Explain how the setting of the Valley of Ashes reflects the moral desolation of the 1920s.
+  Answer: ____________________________________________________________________
+
+Q14. [5 pts] Compare and contrast the perspectives of George Wilson and Tom Buchanan regarding Myrtle.
+  Answer: ____________________________________________________________________
+... [Questions 15 to 20 continued - Total 50 pts]
+
+-------------------------------------------------------
+PART III. ESSAY QUESTIONS (Essay Questions - 25 pts)
+-------------------------------------------------------
+Q21. [25 pts] In a well-structured essay of at least 300 words, analyze how Fitzgerald illustrates the tragic tension between illusion and reality through Jay Gatsby's constructed identity. Provide at least two direct textual citations to justify your argument.
+  Response area: [Lines provided for 300 words]
+
+=======================================================
+[END OF EXAMINATION PAPER - VERIFIED BY LIS DEPT]`,
+        parsedJson: {
+          document_id: "1A2b3C4d_LIS2025_G10_Eng",
+          mime_type: "application/vnd.google-apps.document",
+          metadata: {
+            subject: "Grade 10 English Literature",
+            teacher: "김선생",
+            date: "2025-04-22",
+            grade: 10,
+            total_score: 100,
+            mandatory_headers: ["Teacher", "Date", "Subject", "Grade", "Student Name", "Score Table"]
+          },
+          score_breakdown: {
+            closed: { points: 25, percentage: 25, guideline: "10-30%", status: "PASS" },
+            open: { points: 50, percentage: 50, guideline: "~50%", status: "PASS" },
+            essay: { points: 25, percentage: 25, guideline: "20-40%", status: "PASS" },
+            total_points: 100,
+            total_questions: 21
+          },
+          rules_check: {
+            cover_header_valid: true,
+            mcq_four_options_satisfied: true,
+            rubrics_detected: true,
+            overall_assessment: "APPROVED"
+          }
+        },
+        metadata: {
+          subject: "Grade 10 English Literature",
+          teacher: "김선생 (LIS 공식 교원)",
+          date: "2025-04-22",
+          score: "100 / 100 pts",
+          step1Score: "6/6 항목 일치",
+          step1Checks: [true, true, true, true, true, true]
+        },
+        scores: {
+          summary: "Closed 25pts (25%) · Open 50pts (50%) · Essay 25pts (25%)",
+          total: "합계: 100점",
+          barClosed: "25%",
+          barOpen: "50%",
+          barEssay: "25%",
+          qCount: "총 문항수: 21문항",
+          guidelineBadge: "가이드라인 준수",
+          guidelineBadgeClass: "bg-secondary-fixed text-on-secondary-fixed-variant",
+          auditMessage: `<span class="text-secondary font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">verified</span>서술형(Essay) 배점이 25%로 기준(20~40%)에 정상 충족됩니다.</span>`
+        },
+        step3: {
+          statusTag: "결함 없음",
+          statusTagClass: "text-secondary font-semibold",
+          mcqStatus: "전 문항 4개 보기 완비",
+          ptsStatus: "모든 문항 배점 기재 확인"
+        }
+      },
+
+      g11_math: {
+        fileName: '2025_G11_Math_Midterm.gdoc',
+        size: '5.1 KB',
+        latency: '134ms',
+        charCount: '3,120자',
+        hash: 'sha256: 4e1b8...c99a',
+        statusBadge: '배점 규정 초과 (보완 권고)',
+        badgeClass: 'bg-error-container text-on-error-container',
+        rawText: `=======================================================
+LIGHTHOUSE INTERNATIONAL SCHOOL (LIS)
+2024-2025 SEMESTER 1 MIDTERM EXAMINATION
+=======================================================
+[COVER / HEADER METADATA TABLE]
+Subject     : Grade 11 Pre-Calculus
+Instructor  : 박선생 (Teacher Park)
+Exam Date   : 2025-04-23
+Grade Level : Grade 11
+Student Name: _______________________   Student ID: _________
+Total Points: 100 Points (Closed: 15pts / Open: 40pts / Essay: 45pts)
+
+SCORE SHEET:
++------------+-----------+------------+------------+
+| Closed(15) | Open(40)  | Essay(45)  | Total(100) |
++------------+-----------+------------+------------+
+|            |           |            |            |
++------------+-----------+------------+------------+
+
+-------------------------------------------------------
+PART I. MULTIPLE CHOICE QUESTIONS (Closed Questions - 15 pts)
+-------------------------------------------------------
+Q1. [3 pts] Find the exact domain of the rational function f(x) = (x^2 - 4) / (x^2 - 9).
+  (A) (-infinity, -3) U (-3, 3) U (3, infinity)
+  (B) (-infinity, -2) U (-2, 2) U (2, infinity)
+  (C) All real numbers except x = 0
+  (D) [-3, 3]
+
+-------------------------------------------------------
+PART III. COMPREHENSIVE ESSAY & PROOF (Essay Questions - 45 pts)
+-------------------------------------------------------
+Q11. [20 pts] Prove the trigonometric identity: sin(3x) = 3sin(x) - 4sin^3(x)...
+Q12. [25 pts] Multi-step Real World Modeling: A population of marine species oscillates sinusoidally...
+
+=======================================================
+[END OF EXAMINATION PAPER - WARNING: ESSAY 45% EXCEEDS 40%]`,
+        parsedJson: {
+          document_id: "1A2b3C4d_LIS2025_G11_Math",
+          metadata: {
+            subject: "Grade 11 Pre-Calculus",
+            teacher: "박선생",
+            date: "2025-04-23",
+            grade: 11,
+            total_score: 100,
+            mandatory_headers: ["Teacher", "Date", "Subject", "Grade", "Student Name", "Score Table"]
+          },
+          score_breakdown: {
+            closed: { points: 15, percentage: 15, guideline: "10-30%", status: "PASS" },
+            open: { points: 40, percentage: 40, guideline: "~50%", status: "PASS" },
+            essay: { points: 45, percentage: 45, guideline: "20-40%", status: "FAIL_EXCEEDED" },
+            total_points: 100,
+            total_questions: 12
+          },
+          rules_check: {
+            cover_header_valid: true,
+            essay_ratio_warning: "Essay 45% exceeds school standard (20~40%)",
+            overall_assessment: "REVISION_RECOMMENDED"
+          }
+        },
+        metadata: {
+          subject: "Grade 11 Pre-Calculus",
+          teacher: "박선생 (LIS 수학과)",
+          date: "2025-04-23",
+          score: "100 / 100 pts",
+          step1Score: "6/6 항목 일치",
+          step1Checks: [true, true, true, true, true, true]
+        },
+        scores: {
+          summary: "Closed 15pts (15%) · Open 40pts (40%) · Essay 45pts (45%)",
+          total: "합계: 100점",
+          barClosed: "15%",
+          barOpen: "40%",
+          barEssay: "45%",
+          qCount: "총 문항수: 12문항",
+          guidelineBadge: "규정 초과 경고",
+          guidelineBadgeClass: "bg-error-container text-on-error-container",
+          auditMessage: `<span class="text-error font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">priority_high</span>⚠️ 서술형(Essay) 배점이 45%로 규정 기준(20~40%)을 초과했습니다. 서술형 1문항 배점을 5%p 하향 조정하십시오.</span>`
+        },
+        step3: {
+          statusTag: "수식 정상 / 배점 편중",
+          statusTagClass: "text-error font-semibold",
+          mcqStatus: "객관식 5문항 4지선다 준수",
+          ptsStatus: "배점 표기 완비 (서술형 비중 과다)"
+        }
+      },
+
+      g10_kor: {
+        fileName: '2025_G10_Kor_Midterm.gdoc',
+        size: '3.8 KB',
+        latency: '109ms',
+        charCount: '2,420자',
+        hash: 'sha256: 3a9c7...88ff',
+        statusBadge: '선택지 옵션 누락 1건',
+        badgeClass: 'bg-tertiary-fixed text-tertiary',
+        rawText: `=======================================================
+등대글로벌스쿨 (Lighthouse International School)
+2025학년도 1학기 국어과 중간고사 지필평가
+=======================================================
+[표지 헤더 정보]
+교과목명  : Grade 10 Korean Literature (국어)
+담당교사  : 정선생
+시험일시  : 2025-04-25 (금) 2교시
+대상학년  : 10학년
+학생성명  : ____________________    학번: _________
+배점기준  : 객관식 30점 / 단답형 40점 / 서술형 30점 (총 100점)
+
+SCORE SHEET:
++------------+-----------+------------+------------+
+| 객관식(30) | 단답형(40)| 서술형(30) | 총점(100)  |
++------------+-----------+------------+------------+
+|            |           |            |            |
++------------+-----------+------------+------------+
+
+-------------------------------------------------------
+[1부. 객관식 선택형 문항 - 총 30점]
+-------------------------------------------------------
+1. [3점] 다음 윤동주의 '서시'에 드러난 화자의 태도로 가장 적절한 것은?
+  ① 식민지 현실에 적극적으로 무장 투쟁하려는 의지
+  ② 순결한 삶을 지향하는 자기 성찰과 부끄러움의 정서
+  ③ 현실 도피적 태도와 체념의 자세
+  ④ 자연 친화적인 삶을 추구하는 유유자적한 심경
+
+3. [3점] [⚠️ 파싱 경고: 4지선다 옵션 미달] 윗시의 '별을 노래하는 마음'에 담긴 의미로 적절치 않은 것은?
+  ① 어둠 속에서도 희망을 잃지 않는 미래 지향적 태도
+  ② 모든 죽어가는 것들을 연민하는 박애주의적 사랑
+  ③ 순수성을 지키고자 하는 양심적 결의
+  [누락: ④번 보기가 입력되지 않고 다음 문항으로 넘어감]`,
+        parsedJson: {
+          document_id: "1A2b3C4d_LIS2025_G10_Kor",
+          metadata: {
+            subject: "Grade 10 Korean Literature",
+            teacher: "정선생",
+            date: "2025-04-25",
+            grade: 10,
+            total_score: 100,
+            mandatory_headers: ["Teacher", "Date", "Subject", "Grade", "Student Name", "Score Table"]
+          },
+          score_breakdown: {
+            closed: { points: 30, percentage: 30, guideline: "10-30%", status: "PASS" },
+            open: { points: 40, percentage: 40, guideline: "~50%", status: "PASS" },
+            essay: { points: 30, percentage: 30, guideline: "20-40%", status: "PASS" },
+            total_points: 100,
+            total_questions: 18
+          },
+          rules_check: {
+            cover_header_valid: true,
+            mcq_four_options_satisfied: false,
+            mcq_flaw_details: "Question 3 has only 3 options (Choice ④ is missing)",
+            overall_assessment: "REVISION_RECOMMENDED"
+          }
+        },
+        metadata: {
+          subject: "Grade 10 Korean Literature",
+          teacher: "정선생 (LIS 국어과)",
+          date: "2025-04-25",
+          score: "100 / 100 pts",
+          step1Score: "6/6 항목 일치",
+          step1Checks: [true, true, true, true, true, true]
+        },
+        scores: {
+          summary: "Closed 30pts (30%) · Open 40pts (40%) · Essay 30pts (30%)",
+          total: "합계: 100점",
+          barClosed: "30%",
+          barOpen: "40%",
+          barEssay: "30%",
+          qCount: "총 문항수: 18문항",
+          guidelineBadge: "배점 비율 정상",
+          guidelineBadgeClass: "bg-secondary-fixed text-on-secondary-fixed-variant",
+          auditMessage: `<span class="text-tertiary font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">report_problem</span>배점 비율은 규정에 부합하나, 3번 문항 4지선다 옵션 미달(보기 3개)이 검출되었습니다.</span>`
+        },
+        step3: {
+          statusTag: "선택지 누락 결함",
+          statusTagClass: "text-tertiary font-semibold",
+          mcqStatus: "⚠️ 3번 문항: 보기 3개만 검출 (4번 누락)",
+          ptsStatus: "모든 문항 배점 정상 표기됨"
+        }
+      },
+
+      g9_hist: {
+        fileName: '2025_G9_Hist_Midterm.docx',
+        size: '4.6 KB',
+        latency: '122ms',
+        charCount: '2,950자',
+        hash: 'sha256: 9b2a1...fa34',
+        statusBadge: '규칙 적합 100%',
+        badgeClass: 'bg-secondary-fixed text-on-secondary-fixed-variant',
+        rawText: `=======================================================
+LIGHTHOUSE INTERNATIONAL SCHOOL (LIS)
+GRADE 9 WORLD HISTORY MIDTERM EXAMINATION
+=======================================================
+[COVER / HEADER METADATA TABLE]
+Subject     : Grade 9 World History
+Instructor  : 이선생 (Teacher Lee)
+Exam Date   : 2025-04-24
+Grade Level : Grade 9
+Student Name: _______________________   Student ID: _________
+Total Points: 100 Points (Closed: 20pts / Open: 50pts / Essay: 30pts)
+
+SCORE SHEET:
++------------+-----------+------------+------------+
+| Closed(20) | Open(50)  | Essay(30)  | Total(100) |
++------------+-----------+------------+------------+
+|            |           |            |            |
++------------+-----------+------------+------------+
+
+PART I. MULTIPLE CHOICE QUESTIONS (Closed Questions - 20 pts)
+Q1. [2 pts] Which primary treaty ended the Thirty Years' War in 1648 and established Westphalian sovereignty?
+  (A) Peace of Westphalia
+  (B) Treaty of Versailles
+  (C) Edict of Nantes
+  (D) Congress of Vienna`,
+        parsedJson: {
+          document_id: "1A2b3C4d_LIS2025_G9_Hist",
+          metadata: {
+            subject: "Grade 9 World History",
+            teacher: "이선생",
+            date: "2025-04-24",
+            grade: 9,
+            total_score: 100,
+            mandatory_headers: ["Teacher", "Date", "Subject", "Grade", "Student Name", "Score Table"]
+          },
+          score_breakdown: {
+            closed: { points: 20, percentage: 20, guideline: "10-30%", status: "PASS" },
+            open: { points: 50, percentage: 50, guideline: "~50%", status: "PASS" },
+            essay: { points: 30, percentage: 30, guideline: "20-40%", status: "PASS" },
+            total_points: 100,
+            total_questions: 16
+          },
+          rules_check: {
+            cover_header_valid: true,
+            mcq_four_options_satisfied: true,
+            overall_assessment: "APPROVED"
+          }
+        },
+        metadata: {
+          subject: "Grade 9 World History",
+          teacher: "이선생 (LIS 사회과)",
+          date: "2025-04-24",
+          score: "100 / 100 pts",
+          step1Score: "6/6 항목 일치",
+          step1Checks: [true, true, true, true, true, true]
+        },
+        scores: {
+          summary: "Closed 20pts (20%) · Open 50pts (50%) · Essay 30pts (30%)",
+          total: "합계: 100점",
+          barClosed: "20%",
+          barOpen: "50%",
+          barEssay: "30%",
+          qCount: "총 문항수: 16문항",
+          guidelineBadge: "가이드라인 완벽 부합",
+          guidelineBadgeClass: "bg-secondary-fixed text-on-secondary-fixed-variant",
+          auditMessage: `<span class="text-secondary font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">verified</span>사료 분석형 문항 및 배점 비율 기준(Closed 20%, Open 50%, Essay 30%)에 정확히 부합합니다.</span>`
+        },
+        step3: {
+          statusTag: "결함 없음",
+          statusTagClass: "text-secondary font-semibold",
+          mcqStatus: "10문항 4지선다 규정 준수",
+          ptsStatus: "모든 문항 배점 명시 완료"
+        }
+      },
+
+      g12_bio: {
+        fileName: '미제출 상태 (Google Drive에 파일 없음)',
+        size: '0 KB',
+        latency: '0ms',
+        charCount: '0자',
+        hash: 'N/A',
+        statusBadge: '파싱 불가 (미제출)',
+        badgeClass: 'bg-error-container text-on-error-container',
+        rawText: `[HTTP 404 / Google Drive File Not Found]
+-------------------------------------------------------
+지정된 폴더(1A2b3C4d_LIS2025_ExamMid) 내에 Grade 12 Biology 과목의
+시험지 원문 파일이 존재하지 않습니다.
+
+- 업로드 담당자: 최선생 (LIS 과학과)
+- 상태: 미제출 (Unsubmitted)
+
+Google Docs API v1 스트림 버퍼 및 텍스트 파싱을 수행할 수 없습니다.`,
+        parsedJson: {
+          document_id: null,
+          status: "NOT_FOUND",
+          error: "Google Drive folder has no registered exam file for Grade 12 Biology"
+        },
+        metadata: {
+          subject: "Grade 12 Biology (미제출)",
+          teacher: "최선생 (LIS 과학과)",
+          date: "미정 (미제출)",
+          score: "0 / 0 pts",
+          step1Score: "0/6 항목 (파일 없음)",
+          step1Checks: [false, false, false, false, false, false]
+        },
+        scores: {
+          summary: "분석 불가 (원문 데이터 부재)",
+          total: "합계: 0점",
+          barClosed: "0%",
+          barOpen: "0%",
+          barEssay: "0%",
+          qCount: "총 문항수: 0문항",
+          guidelineBadge: "분석 불가",
+          guidelineBadgeClass: "bg-surface-container text-on-surface-variant",
+          auditMessage: `<span class="text-error font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">cancel</span>Google Drive에 파일이 업로드되지 않아 배점 및 규격 파싱을 수행할 수 없습니다.</span>`
+        },
+        step3: {
+          statusTag: "파일 미등록",
+          statusTagClass: "text-error font-semibold",
+          mcqStatus: "분석 불가 (파일 없음)",
+          ptsStatus: "분석 불가"
+        }
+      }
+    };
+
+    let currentParsedSubjectKey = 'g10_eng';
+    let isRawJsonVisible = false;
+
+    function openDocsParsingModal(subjectKey = 'g10_eng') {
+      const modal = document.getElementById('docsParsingModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        switchDocsParsingSubject(subjectKey);
+      }
+    }
+
+    function closeDocsParsingModal() {
+      const modal = document.getElementById('docsParsingModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function switchDocsParsingSubject(subjectKey) {
+      currentParsedSubjectKey = subjectKey;
+      const data = DOCS_PARSING_MOCK[subjectKey];
+      if (!data) return;
+
+      const tabs = ['g10_eng', 'g11_math', 'g10_kor', 'g9_hist', 'g12_bio'];
+      tabs.forEach(key => {
+        const btn = document.getElementById(`tabBtn-${key}`);
+        if (btn) {
+          if (key === subjectKey) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all bg-primary text-on-primary shadow-sm';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface';
+          }
+        }
+      });
+
+      document.getElementById('leftColumnFileName').textContent = data.fileName;
+      document.getElementById('characterCountText').textContent = `글자 수: ${data.charCount}`;
+      document.getElementById('docHashText').textContent = data.hash;
+      document.getElementById('rawTextStreamBox').value = data.rawText;
+      document.getElementById('metricSizeText').textContent = `크기: ${data.size}`;
+      document.getElementById('metricLatencyText').textContent = `파싱: ${data.latency}`;
+
+      const statusBadge = document.getElementById('parsingStatusBadge');
+      statusBadge.textContent = data.statusBadge;
+      statusBadge.className = `px-2.5 py-0.5 rounded-full text-xs font-bold ${data.badgeClass}`;
+
+      document.getElementById('extractedSubject').textContent = data.metadata.subject;
+      document.getElementById('extractedTeacher').textContent = data.metadata.teacher;
+      document.getElementById('extractedDate').textContent = data.metadata.date;
+      document.getElementById('extractedTotalScore').textContent = data.metadata.score;
+      document.getElementById('step1ScoreBadge').textContent = data.metadata.step1Score;
+
+      const checklist = document.getElementById('mandatoryHeaderChecklist');
+      const headerLabels = ['Teacher', 'Date', 'Subject', 'Grade', 'Student Name', 'Score Table'];
+      checklist.innerHTML = headerLabels.map((label, index) => {
+        const isOk = data.metadata.step1Checks[index];
+        return isOk
+          ? `<span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> ${label}</span>`
+          : `<span class="inline-flex items-center gap-1 p-1 rounded bg-error-container text-error"><span class="material-symbols-outlined text-[13px] text-error">cancel</span> ${label}</span>`;
+      }).join('');
+
+      document.getElementById('scoreBreakdownSummary').textContent = data.scores.summary;
+      document.getElementById('scoreSumTotal').textContent = data.scores.total;
+      document.getElementById('barClosed').style.width = data.scores.barClosed;
+      document.getElementById('barOpen').style.width = data.scores.barOpen;
+      document.getElementById('barEssay').style.width = data.scores.barEssay;
+      document.getElementById('totalQuestionsCount').textContent = data.scores.qCount;
+
+      const guidelineBadge = document.getElementById('scoreGuidelineBadge');
+      guidelineBadge.textContent = data.scores.guidelineBadge;
+      guidelineBadge.className = `text-[11px] font-semibold px-2 py-0.5 rounded ${data.scores.guidelineBadgeClass}`;
+      document.getElementById('scoreAuditMessage').innerHTML = data.scores.auditMessage;
+
+      const step3Tag = document.getElementById('step3StatusTag');
+      step3Tag.textContent = data.step3.statusTag;
+      step3Tag.className = `text-[11px] font-semibold ${data.step3.statusTagClass}`;
+      document.getElementById('step3McqStatus').textContent = data.step3.mcqStatus;
+      document.getElementById('step3PtsStatus').textContent = data.step3.ptsStatus;
+
+      document.getElementById('rawJsonPreBlock').textContent = JSON.stringify(data.parsedJson, null, 2);
+    }
+
+    function toggleParsedJsonView() {
+      isRawJsonVisible = !isRawJsonVisible;
+      const jsonContainer = document.getElementById('rawJsonViewContainer');
+      const btnLabel = document.getElementById('btnJsonToggleLabel');
+      if (jsonContainer) {
+        if (isRawJsonVisible) {
+          jsonContainer.classList.remove('hidden');
+          btnLabel.textContent = 'JSON 닫기';
+        } else {
+          jsonContainer.classList.add('hidden');
+          btnLabel.textContent = 'JSON 보기';
+        }
+      }
+    }
+
+    function reRunDocsParsing() {
+      const progressContainer = document.getElementById('parsingProgressContainer');
+      const progressBar = document.getElementById('parsingProgressBarTrack');
+      const progressPercent = document.getElementById('parsingProgressPercent');
+      const statusText = document.getElementById('parsingStatusText');
+      const icon = document.getElementById('reParseIcon');
+      const btn = document.getElementById('btnReParseDocs');
+
+      if (btn) btn.disabled = true;
+      if (icon) icon.classList.add('animate-spin');
+      if (progressContainer) progressContainer.classList.remove('hidden');
+
+      let percent = 20;
+      progressBar.style.width = '20%';
+      progressPercent.textContent = '20%';
+      statusText.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">progress_activity</span> Google Drive API v3 text/plain 바이너리 스트림 다운로드 중...';
+
+      const interval = setInterval(() => {
+        percent += 30;
+        progressBar.style.width = percent + '%';
+        progressPercent.textContent = percent + '%';
+
+        if (percent === 50) {
+          statusText.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">progress_activity</span> rules.md 정규식 엔진: 표지 헤더 및 배점 테이블 패턴 매칭 중...';
+        } else if (percent >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            if (progressContainer) progressContainer.classList.add('hidden');
+            if (btn) btn.disabled = false;
+            if (icon) icon.classList.remove('animate-spin');
+            switchDocsParsingSubject(currentParsedSubjectKey);
+          }, 350);
+        }
+      }, 250);
+    }
+
+    function copyParsedJson() {
+      const json = document.getElementById('rawJsonPreBlock').textContent;
+      navigator.clipboard.writeText(json).then(() => alert('파싱된 JSON 데이터가 클립보드에 복사되었습니다.'));
+    }
+
+    function copyRawTextStream() {
+      const text = document.getElementById('rawTextStreamBox').value;
+      navigator.clipboard.writeText(text).then(() => alert('Google Docs 원문 텍스트가 클립보드에 복사되었습니다.'));
+    }
+
+    // Modal 2: AI Batch Modal Functions
+    function openAiBatchModal() {
+      const m = document.getElementById('aiBatchModal');
+      if (m) {
+        m.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeAiBatchModal() {
+      const m = document.getElementById('aiBatchModal');
+      if (m) {
+        m.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Filter Logic for Table
+    let currentFilter = 'all';
+
+    function setActiveFilter(filterType) {
+      currentFilter = filterType;
+      const allBtn = document.getElementById('filterAllBtn');
+      const warningBtn = document.getElementById('filterWarningBtn');
+
+      if (filterType === 'all') {
+        allBtn.className = 'px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all';
+        warningBtn.className = 'px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-all';
+      } else if (filterType === 'warning') {
+        warningBtn.className = 'px-3 py-1.5 rounded-lg bg-error text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all';
+        allBtn.className = 'px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-all';
+      } else {
+        allBtn.className = 'px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-all';
+        warningBtn.className = 'px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-all';
+      }
+      filterRows();
+    }
+
+    function filterRows() {
+      const query = (document.getElementById('tableSearchInput')?.value || '').toLowerCase().trim();
+      const rows = document.querySelectorAll('#tableBody tr:not(#emptyStateRow)');
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const statusAttr = row.getAttribute('data-status') || '';
+        const subject = (row.getAttribute('data-subject') || '').toLowerCase();
+        const teacher = (row.getAttribute('data-teacher') || '').toLowerCase();
+        const filename = (row.getAttribute('data-filename') || '').toLowerCase();
+
+        let matchesFilter = true;
+        if (currentFilter === 'warning') {
+          matchesFilter = statusAttr.includes('warning');
+        } else if (currentFilter === 'unchecked') {
+          matchesFilter = statusAttr.includes('unchecked');
+        } else if (currentFilter === 'score') {
+          matchesFilter = statusAttr.includes('score');
+        } else if (currentFilter === 'missing') {
+          matchesFilter = statusAttr.includes('missing');
+        }
+
+        const matchesSearch = !query || subject.includes(query) || teacher.includes(query) || filename.includes(query);
+
+        if (matchesFilter && matchesSearch) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      const badge = document.getElementById('rowCountBadge');
+      if (badge) badge.textContent = `Total ${visibleCount} rows`;
+
+      const footerText = document.getElementById('footerActiveFilterText');
+      if (footerText) footerText.textContent = `${currentFilter} (${visibleCount}개)`;
+
+      const emptyRow = document.getElementById('emptyStateRow');
+      if (emptyRow) {
+        if (visibleCount === 0) emptyRow.classList.remove('hidden');
+        else emptyRow.classList.add('hidden');
+      }
+    }
+
+    function resetFilters() {
+      const input = document.getElementById('tableSearchInput');
+      if (input) input.value = '';
+      setActiveFilter('all');
+    }
+  </script>
+</body>
+</html>

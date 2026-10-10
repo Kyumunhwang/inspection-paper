@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Inspection Paper - LIS Exam Monitoring System</title>
+  <link rel="icon" type="image/png" href="/static/logo.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#00236f',
+            'primary-container': '#1e3a8a',
+            'on-primary': '#ffffff',
+            secondary: '#006a63',
+            'secondary-container': '#99efe5',
+            'secondary-fixed': '#9cf2e8',
+            'on-secondary-fixed-variant': '#00504a',
+            background: '#f8f9ff',
+            surface: '#f8f9ff',
+            'surface-container-lowest': '#ffffff',
+            'surface-container-low': '#eff4ff',
+            'surface-container': '#e6eeff',
+            'surface-container-high': '#dce9ff',
+            'surface-container-highest': '#d5e3fc',
+            'on-surface': '#0d1c2e',
+            'on-surface-variant': '#444651',
+            'outline-variant': '#c5c5d3',
+            error: '#ba1a1a',
+            'error-container': '#ffdad6',
+            'on-error-container': '#93000a',
+            tertiary: '#763300',
+            'tertiary-fixed': '#ffdbca',
+            'tertiary-container': '#ff8e49'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col">
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-20 right-6 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-surface-container shadow-sm">
+    <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-3">
+          <img src="/static/logo.png" alt="Inspection Paper Logo" class="h-10 w-auto rounded-lg object-contain shadow-sm border border-surface-container"/>
+          <div class="flex flex-col">
+            <span class="font-bold text-lg text-primary tracking-tight leading-tight">Inspection Paper</span>
+            <span class="text-[11px] font-medium text-on-surface-variant">Lighthouse International School Exam Audit</span>
+          </div>
+        </div>
+        <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+          <a href="#" class="px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary">Monitoring Dashboard</a>
+          <a href="#" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">Audit Logs</a>
+          <a href="#" class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">Settings</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div id="headerUserCard" class="hidden flex items-center gap-2.5 bg-surface-container-lowest px-3 py-1.5 rounded-xl border border-surface-container shadow-sm">
+          <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+          <div class="text-left text-xs">
+            <div id="headerUserName" class="font-semibold text-on-surface">Vice Principal</div>
+            <div id="headerUserEmail" class="text-on-surface-variant font-mono text-[11px]">vice.principal@liskorea.org</div>
+          </div>
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary ml-1 shadow-inner">
+            <span class="material-symbols-outlined text-[18px]">person</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6 flex flex-col gap-6">
+
+    <!-- Section 1: Google OAuth & Drive Folder Sync Bar -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Subcard 1: Auth State -->
+      <div class="lg:col-span-5 bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[22px]">account_circle</span>
+            <span class="font-bold text-base text-on-surface">Google Workspace Authentication</span>
+          </div>
+          <span id="authStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            Mock Simulation Mode
+          </span>
+        </div>
+
+        <div class="bg-surface-container-low p-3 rounded-xl flex items-center justify-between my-3">
+          <div class="flex flex-col">
+            <span class="text-xs text-on-surface-variant">Authenticated Administrator</span>
+            <span id="authUserEmail" class="font-mono text-sm text-primary font-semibold">vice.principal@liskorea.org</span>
+          </div>
+          <span id="authRoleBadge" class="px-2.5 py-1 bg-surface-container-lowest text-primary text-xs font-semibold rounded-md shadow-sm">
+            Vice Principal (Full Audit)
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-on-surface-variant flex-wrap gap-2">
+          <span id="apiStatusText" class="flex items-center gap-1 text-secondary">
+            <span class="material-symbols-outlined text-[16px]">verified</span>
+            Google Drive & Docs API v3 Ready
+          </span>
+          <div class="flex items-center gap-2">
+            <button id="mockSwitchBtn" class="px-2.5 py-1 text-primary hover:bg-surface-container text-xs font-medium rounded transition-colors hidden">
+              Mode Switch
+            </button>
+            <button id="authActionBtn" class="px-3 py-1 bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-medium rounded transition-colors flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">logout</span>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subcard 2: Google Drive Folder Sync Input -->
+      <div class="lg:col-span-7 bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[22px]">folder_managed</span>
+            <span class="font-bold text-base text-on-surface">Target Semester Exam Folder</span>
+          </div>
+          <span id="syncStatusTime" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-primary text-xs font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            Synced: Ready
+          </span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2.5 my-3">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">key</span>
+            </span>
+            <input class="w-full h-10 pl-9 pr-3 bg-surface font-mono text-sm text-on-surface rounded-lg border border-surface-container focus:outline-none focus:border-primary shadow-inner" id="folderIdInput" type="text" value="1A2b3C4d_LIS2025_ExamMid" placeholder="Enter Google Drive Folder ID..."/>
+          </div>
+          <button id="btnSyncFolder" class="h-10 px-5 bg-primary hover:bg-primary-container text-on-primary text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shrink-0 shadow-sm disabled:opacity-60">
+            <span id="btnSyncFolderIcon" class="material-symbols-outlined text-[18px]">sync</span>
+            <span id="btnSyncFolderText">Sync Folder & Files</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between text-xs text-on-surface-variant">
+          <span class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px] text-primary">folder_open</span>
+            Folder Path: <code id="folderPathText" class="font-mono text-on-surface font-semibold">LIS_Drive / 2025_Spring / Midterm_Official</code>
+          </span>
+          <span id="folderIdMeta" class="font-mono text-on-surface-variant">Folder ID: 1A2b3C4d_LIS2025_ExamMid</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Metric Overview Strip (3-Cards) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-on-surface-variant font-semibold">Total Target Subjects</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="metricTotalSubjects" class="text-3xl font-extrabold text-primary">0</span>
+            <span class="text-xs text-on-surface-variant">Registered Subjects</span>
+          </div>
+          <div class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px] text-primary">school</span>
+            All Grade Levels (G9 ~ G12)
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[28px]">assignment</span>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-on-surface-variant font-semibold">Exam Paper Uploads</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="metricUploaded" class="text-3xl font-extrabold text-secondary">0</span>
+            <span id="metricUploadedPercent" class="text-xs text-on-surface-variant">/ 0 (0.0%)</span>
+          </div>
+          <div class="w-36 h-2 bg-surface-container rounded-full mt-2.5 overflow-hidden">
+            <div id="metricProgressBar" class="h-full bg-secondary rounded-full transition-all duration-300" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-secondary">
+          <span class="material-symbols-outlined text-[28px]">cloud_done</span>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-container shadow-sm flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-on-surface-variant font-semibold">Vice Principal Review Status</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span id="metricApproved" class="text-3xl font-extrabold text-primary-container">0</span>
+            <span class="text-xs text-on-surface-variant">Verified with PDF</span>
+          </div>
+          <div id="metricPending" class="text-xs text-error mt-2 flex items-center gap-1 font-medium">
+            <span class="material-symbols-outlined text-[15px]">pending_actions</span>
+            Pending Review: 0 papers
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[28px]">rule_folder</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Monitoring Matrix Table (PRD [F2], rules.md) -->
+    <div class="bg-surface-container-lowest rounded-2xl border border-surface-container shadow-sm overflow-hidden flex flex-col">
+      <!-- Filter & Action Header -->
+      <div class="p-5 flex flex-col gap-3 border-b border-surface-container bg-surface-container-lowest">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-[24px]">table_chart</span>
+            <h2 class="font-bold text-lg text-on-surface">Exam Paper Inspection List</h2>
+            <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono text-xs font-semibold" id="rowCountBadge">Total 0 rows</span>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="relative">
+              <input class="h-9 pl-9 pr-3 bg-surface text-xs font-medium text-on-surface rounded-lg border border-surface-container focus:outline-none focus:border-primary w-64 shadow-inner" id="tableSearchInput" placeholder="Filter by Subject, Teacher, File..." type="text"/>
+              <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[16px] text-on-surface-variant">search</span>
+            </div>
+            <button class="h-9 px-3 bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm" onclick="showToast('Exporting CSV inspection report...', 'info')">
+              <span class="material-symbols-outlined text-[16px]">download</span>Export (CSV)
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Buttons Strip -->
+        <div class="flex items-center gap-2 flex-wrap pt-1">
+          <div class="inline-flex items-center p-1 bg-surface-container rounded-xl gap-1">
+            <button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all" id="filterAllBtn" onclick="setFilter('all')">
+              <span class="material-symbols-outlined text-[15px]">list_alt</span>All Exams
+            </button>
+            <button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-all" id="filterWarningBtn" onclick="setFilter('warning')">
+              <span class="material-symbols-outlined text-[15px] text-error">warning</span>Needs Review / Warnings
+            </button>
+          </div>
+
+          <div class="h-4 w-[1px] bg-outline-variant mx-1 hidden sm:block"></div>
+
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors flex items-center gap-1" id="filterPillUnchecked" onclick="setFilter('unchecked')">
+              <span class="material-symbols-outlined text-[14px]">hourglass_empty</span>Unchecked (No PDF)
+            </button>
+            <button class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors flex items-center gap-1" id="filterPillScore" onclick="setFilter('score')">
+              <span class="w-1.5 h-1.5 rounded-full bg-error"></span>Weight Warning
+            </button>
+            <button class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors flex items-center gap-1" id="filterPillMissing" onclick="setFilter('missing')">
+              <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>Not Submitted
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Wrapper -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" id="examMonitorTable">
+          <thead>
+            <tr class="bg-surface-container-low text-on-surface-variant text-xs font-semibold uppercase tracking-wider h-11 border-b border-surface-container">
+              <th class="py-3 px-4">Subject</th>
+              <th class="py-3 px-3">Teacher</th>
+              <th class="py-3 px-4">Exam File</th>
+              <th class="py-3 px-3">Exam Date</th>
+              <th class="py-3 px-3 text-center">Preview & Parsing</th>
+              <th class="py-3 px-3 text-center">Uploaded</th>
+              <th class="py-3 px-4">Exam Quality</th>
+              <th class="py-3 px-3 text-center">Inspection Status</th>
+              <th class="py-3 px-4">Notes / Memo</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container text-sm text-on-surface" id="tableBody">
+
+            <!-- Empty State Row -->
+            <tr class="hidden" id="emptyStateRow">
+              <td class="py-12 px-4 text-center bg-surface-container-lowest" colspan="9">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-4xl text-outline-variant">search_off</span>
+                  <p class="font-bold text-base text-on-surface">No examination papers match criteria</p>
+                  <p class="text-xs text-on-surface-variant">Adjust your search keyword or active filter to view data.</p>
+                  <button class="mt-2 px-3 py-1 bg-surface-container-high hover:bg-surface-variant text-primary rounded-lg text-xs font-semibold" onclick="resetFilters()">
+                    Reset Filters
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Action & Status Strip -->
+      <div class="p-4 bg-surface-container-low border-t border-surface-container flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+          <span class="material-symbols-outlined text-[18px] text-primary">info</span>
+          <span>Active filter view: <strong class="text-primary font-mono font-semibold" id="footerActiveFilterText">ALL</strong></span>
+        </div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <!-- Docs Parsing Simulator Trigger -->
+          <button class="px-4 py-2 bg-surface-container-lowest hover:bg-surface-container border border-primary/40 text-primary text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-sm" onclick="openDocsParsingModal('g10_eng')">
+            <span class="material-symbols-outlined text-[18px] text-primary">description</span>
+            <span>Google Docs Text Parser [F3]</span>
+          </button>
+
+          <!-- AI Batch Quality Audit Trigger -->
+          <button class="px-4 py-2 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-sm" onclick="openAiBatchModal()">
+            <span class="material-symbols-outlined text-[18px]">psychology</span>
+            <span>AI Batch Quality Audit [F6]</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= MODAL 1: GOOGLE DOCS TEXT PARSING SIMULATOR (PRD [F3]) ================= -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden transition-all" id="docsParsingModal" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm transition-opacity" onclick="closeDocsParsingModal()"></div>
+
+    <div class="relative w-full max-w-6xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10 border border-surface-container">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-start justify-between gap-4 shrink-0 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
+            <span class="material-symbols-outlined text-[24px] text-secondary-fixed">description</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h2 class="font-bold text-lg text-white tracking-tight">Google Docs Text Parsing & Metadata Extraction Simulator</h2>
+              <span class="px-2.5 py-0.5 rounded-full bg-secondary text-on-secondary text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                Drive text/plain v3
+              </span>
+            </div>
+            <p class="text-xs text-surface-container-high mt-0.5">
+              rules.md 3-Step Standard: Text stream extraction, Cover Page headers regex validation & point distribution
+            </p>
+          </div>
+        </div>
+        <button class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors shrink-0" onclick="closeDocsParsingModal()">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+
+      <!-- Subject Tabs Toolbar -->
+      <div class="px-6 py-2.5 bg-surface-container-low border-b border-surface-container flex flex-col md:flex-row md:items-center justify-between gap-2.5 shrink-0">
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0" id="docsSubjectTabs">
+          <button class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all bg-primary text-on-primary shadow-sm" id="tabBtn-g10_eng" onclick="switchDocsParsingSubject('g10_eng')">
+            <span class="material-symbols-outlined text-[14px]">check_circle</span>
+            <span>Grade 10 English</span>
+            <span class="text-[10px] opacity-75 font-mono">.gdoc</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface" id="tabBtn-g11_math" onclick="switchDocsParsingSubject('g11_math')">
+            <span class="material-symbols-outlined text-[14px] text-error">warning</span>
+            <span>Grade 11 Pre-Calc</span>
+            <span class="text-[10px] text-error font-bold font-mono">Weight Warn</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface" id="tabBtn-g10_kor" onclick="switchDocsParsingSubject('g10_kor')">
+            <span class="material-symbols-outlined text-[14px] text-tertiary">report_problem</span>
+            <span>Grade 10 Korean</span>
+            <span class="text-[10px] text-tertiary font-bold font-mono">Option Defect</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface" id="tabBtn-g9_hist" onclick="switchDocsParsingSubject('g9_hist')">
+            <span class="material-symbols-outlined text-[14px]">history_edu</span>
+            <span>Grade 9 History</span>
+            <span class="text-[10px] opacity-75 font-mono">.docx</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-surface-container hover:bg-surface-container-high text-on-surface-variant" id="tabBtn-g12_bio" onclick="switchDocsParsingSubject('g12_bio')">
+            <span class="material-symbols-outlined text-[14px] text-outline-variant">cancel</span>
+            <span>Grade 12 Bio (Missing)</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-1.5 text-xs text-on-surface-variant font-mono px-2.5 py-1 bg-surface-container rounded-lg">
+            <span class="material-symbols-outlined text-[14px] text-secondary">timer</span>
+            <span id="metricSizeText">Size: 4.2 KB</span>
+            <span>·</span>
+            <span id="metricLatencyText">Latency: 118ms</span>
+          </div>
+          <button class="px-2.5 py-1 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors" onclick="toggleParsedJsonView()">
+            <span class="material-symbols-outlined text-[15px]">code</span>
+            <span id="btnJsonToggleLabel">View JSON</span>
+          </button>
+          <button class="px-3 py-1 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm" id="btnReParseDocs" onclick="reRunDocsParsing()">
+            <span class="material-symbols-outlined text-[15px]" id="reParseIcon">sync</span>
+            <span>Re-parse Stream</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scroll Area -->
+      <div class="overflow-y-auto px-6 py-4 flex-1 flex flex-col gap-4 bg-background">
+
+        <!-- Re-parsing Progress Bar -->
+        <div class="hidden p-3 bg-primary/5 rounded-xl border border-primary/20 flex flex-col gap-1.5 transition-all" id="parsingProgressContainer">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-primary flex items-center gap-1.5" id="parsingStatusText">
+              <span class="material-symbols-outlined text-[15px] animate-spin">progress_activity</span>
+              Extracting Google Docs text/plain stream buffer...
+            </span>
+            <span class="font-mono text-xs text-primary font-bold" id="parsingProgressPercent">45%</span>
+          </div>
+          <div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+            <div class="h-full bg-primary rounded-full transition-all duration-300 ease-out" id="parsingProgressBarTrack" style="width: 45%;"></div>
+          </div>
+        </div>
+
+        <!-- RAW JSON VIEW -->
+        <div class="hidden bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm" id="rawJsonViewContainer">
+          <div class="flex items-center justify-between pb-2 border-b border-surface-container mb-2">
+            <span class="font-bold text-xs text-primary flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">data_object</span>
+              Structured Parsed JSON Schema ({ metadata, score_breakdown, rules_check })
+            </span>
+            <button class="text-on-surface-variant hover:text-on-surface text-xs font-medium flex items-center gap-1" onclick="copyParsedJson()">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              Copy JSON
+            </button>
+          </div>
+          <pre class="bg-surface-container-low p-3.5 rounded-lg font-mono text-xs text-on-surface overflow-x-auto max-h-56 leading-relaxed" id="rawJsonPreBlock"></pre>
+        </div>
+
+        <!-- Two-Column Split Inspector -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Left Column: Raw Text Stream from Google Docs Export -->
+          <div class="lg:col-span-6 flex flex-col gap-2 bg-surface-container-lowest p-4 rounded-xl border border-surface-container shadow-sm">
+            <div class="flex items-center justify-between pb-2 border-b border-surface-container">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">raw_on</span>
+                <h3 class="font-bold text-sm text-on-surface">Google Docs Raw Text Stream (text/plain)</h3>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-mono text-[11px]" id="mimeTypeText">MIME: text/plain (UTF-8)</span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-on-surface-variant">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary">feed</span>
+                File: <strong class="text-on-surface font-mono font-medium" id="leftColumnFileName">2025_G10_Eng_Midterm.gdoc</strong>
+              </span>
+              <span class="font-mono text-xs" id="characterCountText">Characters: 2,840</span>
+            </div>
+
+            <!-- Text Box -->
+            <div class="relative mt-1">
+              <textarea class="w-full h-[430px] p-3.5 bg-surface-container-low font-mono text-xs text-on-surface rounded-lg border border-surface-container leading-relaxed focus:outline-none resize-none shadow-inner" id="rawTextStreamBox" readonly></textarea>
+              <div class="absolute bottom-2.5 right-3 text-[11px] font-mono text-on-surface-variant bg-surface-container-lowest/80 px-2 py-0.5 rounded backdrop-blur">
+                Google Drive Stream
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 text-xs text-on-surface-variant border-t border-surface-container">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px] text-secondary">verified_user</span>
+                Document Hash: <code class="font-mono text-[11px]" id="docHashText">sha256: 7f8a1...d4e2</code>
+              </span>
+              <button class="text-primary hover:underline font-semibold text-xs flex items-center gap-0.5" onclick="copyRawTextStream()">
+                <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                Copy Text
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Regex & AI Structured Extraction -->
+          <div class="lg:col-span-6 flex flex-col gap-4 bg-surface-container-lowest p-4 rounded-xl border border-surface-container shadow-sm">
+            <div class="flex items-center justify-between pb-2 border-b border-surface-container">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary text-[20px]">account_tree</span>
+                <h3 class="font-bold text-sm text-on-surface">Regex & Structured Extraction Results</h3>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold" id="parsingStatusBadge">
+                Rules Compliance 100%
+              </span>
+            </div>
+
+            <!-- Step 1: Cover Page Metadata Extraction -->
+            <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">badge</span>
+                  [Step 1] Cover Page Metadata Auto-Extraction
+                </span>
+                <span class="text-[11px] font-mono text-secondary font-bold" id="step1ScoreBadge">6/6 Elements Matched</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">Subject</span>
+                  <span class="font-bold text-on-surface font-mono" id="extractedSubject">Grade 10 English Literature</span>
+                </div>
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">Teacher</span>
+                  <span class="font-bold text-on-surface" id="extractedTeacher">Teacher Kim</span>
+                </div>
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">Exam Date</span>
+                  <span class="font-bold text-on-surface font-mono" id="extractedDate">2025-04-22</span>
+                </div>
+                <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container flex flex-col">
+                  <span class="text-[10px] text-on-surface-variant">Total Score</span>
+                  <span class="font-bold text-primary font-mono" id="extractedTotalScore">100 / 100 pts</span>
+                </div>
+              </div>
+
+              <!-- Checklist for 6 Mandatory Cover Header Items -->
+              <div class="mt-1 pt-2 border-t border-surface-container">
+                <span class="text-[11px] font-semibold text-on-surface-variant mb-1.5 block">rules.md 6 Mandatory Header Requirements:</span>
+                <div class="grid grid-cols-3 gap-1.5 text-[11px] font-medium" id="mandatoryHeaderChecklist">
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Teacher</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Date</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Subject</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Grade</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Student Name</span>
+                  <span class="inline-flex items-center gap-1 p-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[13px] text-secondary">check_circle</span> Score Table</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Points & Question Distribution Auto-Calculation -->
+            <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">pie_chart</span>
+                  [Step 2] Points & Category Distribution Analysis
+                </span>
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded" id="scoreGuidelineBadge">Guideline Compliant</span>
+              </div>
+
+              <!-- Ratio Breakdown Multi-bar -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-xs font-mono">
+                  <span id="scoreBreakdownSummary">Closed 25pts (25%) · Open 50pts (50%) · Essay 25pts (25%)</span>
+                  <span class="font-bold text-primary" id="scoreSumTotal">Total: 100 pts</span>
+                </div>
+                <div class="w-full h-3 rounded-full bg-surface-container-high overflow-hidden flex" id="scoreRatioBarContainer">
+                  <div class="bg-primary h-full transition-all duration-300" id="barClosed" style="width: 25%;" title="Closed 25%"></div>
+                  <div class="bg-secondary h-full transition-all duration-300" id="barOpen" style="width: 50%;" title="Open 50%"></div>
+                  <div class="bg-tertiary-container h-full transition-all duration-300" id="barEssay" style="width: 25%;" title="Essay 25%"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-on-surface-variant">
+                  <div class="flex items-center gap-2.5">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary"></span> Closed (10-30%)</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> Open (~50%)</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary-container"></span> Essay (20-40%)</span>
+                  </div>
+                  <span class="font-mono text-[11px]" id="totalQuestionsCount">Total: 21 Questions</span>
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-lg bg-surface-container-lowest border border-surface-container text-xs" id="scoreAuditMessage">
+                <span class="text-secondary font-medium flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px]">verified</span>
+                  Essay weight is 25%, fully satisfying the standard (20-40%).
+                </span>
+              </div>
+            </div>
+
+            <!-- Step 3: Question Specification & Option Quality Check -->
+            <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">checklist_rtl</span>
+                  [Step 3] Question Specifications & MCQ 4-Choice Verification
+                </span>
+                <span class="text-[11px] font-semibold" id="step3StatusTag">No Defects</span>
+              </div>
+
+              <div class="flex flex-col gap-1.5 text-xs">
+                <div class="flex items-center justify-between bg-surface-container-lowest p-2 rounded-lg border border-surface-container">
+                  <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[15px] text-secondary">check_circle</span>
+                    <span>MCQ 4-Option (A/B/C/D or 1/2/3/4) Completeness</span>
+                  </span>
+                  <span class="font-mono text-secondary font-bold text-xs" id="step3McqStatus">All items have 4 choices</span>
+                </div>
+                <div class="flex items-center justify-between bg-surface-container-lowest p-2 rounded-lg border border-surface-container">
+                  <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[15px] text-secondary">check_circle</span>
+                    <span>Point Allocations (pts) & Notation Validity</span>
+                  </span>
+                  <span class="font-mono text-secondary font-bold text-xs" id="step3PtsStatus">Points verified on all items</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+          <span class="material-symbols-outlined text-[16px] text-primary">sync_saved_locally</span>
+          <span>Google Workspace Drive Export v3 Sync State: Active</span>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button class="px-3.5 py-1.5 bg-surface-container-lowest hover:bg-surface-container border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" onclick="showToast('Exporting parsing audit report as JSON...', 'info')">
+            <span class="material-symbols-outlined text-[16px] text-primary">download</span>
+            <span>Export Parsing Report</span>
+          </button>
+          <button class="px-5 py-1.5 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-lg transition-colors shadow-sm" onclick="closeDocsParsingModal()">
+            Close
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL 2: AI BATCH AUDIT QUALITY REPORT (PRD [F6]) ================= -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden transition-all" id="aiBatchModal" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm transition-opacity" onclick="closeAiBatchModal()"></div>
+
+    <div class="relative w-full max-w-5xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10 border border-surface-container">
+      <div class="px-6 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-start justify-between gap-4 shrink-0 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
+            <span class="material-symbols-outlined text-[24px] text-secondary-fixed">auto_awesome</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-bold text-lg text-white tracking-tight">AI Examination Paper Batch Quality Report</h2>
+              <span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary text-[11px] font-bold uppercase tracking-wider">rules.md Engine</span>
+            </div>
+            <p class="text-xs text-surface-container-high mt-0.5">
+              Automated audit evaluation based on rules.md (Cover Header, Question Balance, Difficulty/Cognitive Load)
+            </p>
+          </div>
+        </div>
+        <button class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors shrink-0" onclick="closeAiBatchModal()">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto px-6 py-4 flex flex-col gap-4">
+        <!-- Progress Bar & Re-run Row -->
+        <div class="p-4 bg-surface-container-low rounded-xl border border-surface-container flex flex-col gap-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[20px]">task_alt</span>
+              <span class="font-bold text-sm text-on-surface" id="aiBatchStatusText">Evaluation Complete (4/5 Exams - 1 Unsubmitted Excluded)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs font-bold text-primary" id="aiBatchPercentText">100%</span>
+              <button class="px-3 py-1 bg-surface-container-lowest hover:bg-surface-container border border-outline-variant text-primary text-xs font-semibold rounded-lg flex items-center gap-1 transition-all shadow-sm" onclick="reRunAiBatchAudit()">
+                <span class="material-symbols-outlined text-[15px]" id="aiRerunIcon">restart_alt</span>
+                <span>Re-run Audit</span>
+              </button>
+            </div>
+          </div>
+          <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-secondary to-primary rounded-full" id="aiBatchProgressBar" style="width: 100%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-on-surface-variant text-[11px]">
+            <span>Gemini Pro Audit Agent · LIS Guidelines v2.4</span>
+            <span id="aiLastAuditedText">Last audit: Just now</span>
+          </div>
+        </div>
+
+        <!-- Metric Strip Summary (4 Cards) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">Audited</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-primary" id="aiMetricCompleted">4</span>
+              <span class="text-xs text-on-surface-variant">/ 5 Exams</span>
+            </div>
+            <span class="text-[11px] text-secondary font-medium mt-1">100% of Uploaded Docs</span>
+          </div>
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">Standard Compliant</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-secondary" id="aiMetricCompliant">2</span>
+              <span class="text-xs text-on-surface-variant">Exams (Pass)</span>
+            </div>
+            <span class="text-[11px] text-secondary font-medium mt-1">Header · Balance · Difficulty</span>
+          </div>
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">Revision Recommended</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-error" id="aiMetricRevision">2</span>
+              <span class="text-xs text-on-surface-variant">Exams (Flagged)</span>
+            </div>
+            <span class="text-[11px] text-error font-medium mt-1">Points Over 1 · Choice Missing 1</span>
+          </div>
+          <div class="bg-surface-container-lowest p-3 rounded-xl border border-surface-container flex flex-col">
+            <span class="text-xs text-on-surface-variant font-medium">Unsubmitted</span>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-outline-variant" id="aiMetricMissing">1</span>
+              <span class="text-xs text-on-surface-variant">Exam</span>
+            </div>
+            <span class="text-[11px] text-outline-variant font-medium mt-1">G12 Biology</span>
+          </div>
+        </div>
+
+        <!-- Subject 3-Step Details -->
+        <div class="flex flex-col gap-3">
+          <div class="font-bold text-sm text-on-surface flex items-center gap-2 pb-1 border-b border-surface-container">
+            <span class="material-symbols-outlined text-primary text-[20px]">fact_check</span>
+            Subject Quality Audit Detail Reports
+          </div>
+
+          <div id="aiSubjectCardsContainer" class="flex flex-col gap-3">
+            <!-- Dynamic Subject Cards Rendered via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex items-center justify-between">
+        <button class="px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface text-xs font-semibold rounded-lg flex items-center gap-1.5" onclick="showToast('Dispatched automated feedback emails to instructors.', 'success')">
+          <span class="material-symbols-outlined text-[16px] text-primary">mail</span>
+          Dispatch Feedback Emails to Teachers
+        </button>
+        <button class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-lg shadow-sm" onclick="closeAiBatchModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

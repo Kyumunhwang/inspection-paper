@@ -629,6 +629,10 @@ function closeAuditLogsModal() {
 }
 
 function openSettingsModal() {
+  const display = document.getElementById('redirectUriDisplay');
+  if (display && window.location.origin) {
+    display.textContent = `${window.location.origin}/api/auth/google/callback`;
+  }
   document.getElementById('settingsModal').classList.remove('hidden');
 }
 

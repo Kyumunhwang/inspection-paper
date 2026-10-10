@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # Google OAuth 2.0 Credentials
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = "http://localhost:3088/api/auth/google/callback"
+    GOOGLE_REDIRECT_URI: str = "https://inspection-paper-923588298450.asia-northeast3.run.app/api/auth/google/callback"
     GOOGLE_SCOPES: list[str] = [
         "openid",
         "https://www.googleapis.com/auth/userinfo.email",

@@ -273,7 +273,17 @@ function renderTable(files) {
     const docKey = DOC_KEY_MAP[file.id] || 'g10_eng';
 
     tr.innerHTML = `
-      <td class="py-3 px-4 font-bold whitespace-nowrap">${file.subject}</td>
+      <td class="py-3 px-4 font-bold whitespace-nowrap">
+        <div class="flex flex-col">
+          <span class="text-sm font-bold text-on-surface">${file.subject}</span>
+          ${file.folder_path ? `
+            <span class="text-[10px] text-on-surface-variant font-mono font-normal flex items-center gap-1 mt-0.5" title="Recursive Subfolder Location">
+              <span class="material-symbols-outlined text-[12px] text-primary">folder_open</span>
+              <span>${file.folder_path}</span>
+            </span>
+          ` : ''}
+        </div>
+      </td>
       <td class="py-3 px-3 whitespace-nowrap">
         <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium text-xs">${file.teacher}</span>
       </td>
@@ -585,29 +595,45 @@ async function loadAndRenderAiBatchAudit() {
             ${report.status_label}
           </span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs pt-1">
           <div class="p-2.5 bg-surface-container-low rounded-lg">
-            <strong class="text-primary block mb-0.5">[Step 1 Header]</strong>
-            ${report.step1_header}
-          </div>
-          <div class="p-2.5 ${isCompliant ? 'bg-surface-container-low' : 'bg-error-container/30 border border-error/20'} rounded-lg">
-            <strong class="${isCompliant ? 'text-primary' : 'text-error'} block mb-0.5">[Step 2 Balance]</strong>
-            ${report.step2_score}
+            <strong class="text-primary block mb-0.5 font-bold">[Check 1: Header Info]</strong>
+            <span>${report.check1_header || 'Verified'}</span>
           </div>
           <div class="p-2.5 bg-surface-container-low rounded-lg">
-            <strong class="text-primary block mb-0.5">[Step 3 Difficulty]</strong>
-            ${report.step3_difficulty}
+            <strong class="text-primary block mb-0.5 font-bold">[Check 2: Grammar & Typos]</strong>
+            <span>${report.check2_grammar || 'Clean'}</span>
+          </div>
+          <div class="p-2.5 bg-surface-container-low rounded-lg">
+            <strong class="text-primary block mb-0.5 font-bold">[Check 3: Logical Errors]</strong>
+            <span>${report.check3_logic || 'Verified'}</span>
+          </div>
+          <div class="p-2.5 ${report.check4_q_pagination && report.check4_q_pagination.includes('Warning') ? 'bg-error-container/30 border border-error/20' : 'bg-surface-container-low'} rounded-lg">
+            <strong class="${report.check4_q_pagination && report.check4_q_pagination.includes('Warning') ? 'text-error' : 'text-primary'} block mb-0.5 font-bold">[Check 4: Q. Pagination]</strong>
+            <span>${report.check4_q_pagination || 'Intact'}</span>
+          </div>
+          <div class="p-2.5 ${report.check5_opt_pagination && report.check5_opt_pagination.includes('Warning') ? 'bg-error-container/30 border border-error/20' : 'bg-surface-container-low'} rounded-lg">
+            <strong class="${report.check5_opt_pagination && report.check5_opt_pagination.includes('Warning') ? 'text-error' : 'text-primary'} block mb-0.5 font-bold">[Check 5: Options Pagination]</strong>
+            <span>${report.check5_opt_pagination || 'Intact'}</span>
+          </div>
+          <div class="p-2.5 ${report.check6_spacing && report.check6_spacing.includes('Warning') ? 'bg-error-container/30 border border-error/20' : 'bg-surface-container-low'} rounded-lg">
+            <strong class="${report.check6_spacing && report.check6_spacing.includes('Warning') ? 'text-error' : 'text-primary'} block mb-0.5 font-bold">[Check 6: Formatting Spacing]</strong>
+            <span>${report.check6_spacing || 'Consistent'}</span>
+          </div>
+          <div class="p-2.5 ${report.check7_time_balance && report.check7_time_balance.includes('Warning') ? 'bg-error-container/30 border border-error/20' : 'bg-surface-container-low'} rounded-lg sm:col-span-2 lg:col-span-3">
+            <strong class="${report.check7_time_balance && report.check7_time_balance.includes('Warning') ? 'text-error' : 'text-primary'} block mb-0.5 font-bold">[Check 7: Time vs Workload Balance]</strong>
+            <span>${report.check7_time_balance || 'Balanced'}</span>
           </div>
         </div>
-        <div class="text-xs ${isCompliant ? 'text-secondary' : 'text-error'} font-semibold flex items-center gap-1 mt-0.5">
-          <span class="material-symbols-outlined text-[15px]">${isCompliant ? 'verified' : 'priority_high'}</span>
+        <div class="text-xs ${isCompliant ? 'text-secondary' : 'text-error'} font-semibold flex items-center gap-1.5 mt-1 p-2.5 bg-surface-container-lowest rounded-lg border border-surface-container">
+          <span class="material-symbols-outlined text-[16px]">${isCompliant ? 'verified' : 'priority_high'}</span>
           <span>Recommendation: ${report.recommendation}</span>
         </div>
       `;
       container.appendChild(card);
     });
 
-    // Synchronize AI Quality Audit evaluations directly into the main inspection table
+    // Synchronize 7-Step AI Quality Audit evaluations directly into the main inspection table
     if (state.drive && state.drive.files) {
       data.reports.forEach(report => {
         const file = state.drive.files.find(f =>
@@ -615,11 +641,19 @@ async function loadAndRenderAiBatchAudit() {
           report.subject.toLowerCase().includes(f.subject.toLowerCase())
         );
         if (file) {
+          file.check1_header = report.check1_header;
+          file.check2_grammar = report.check2_grammar;
+          file.check3_logic = report.check3_logic;
+          file.check4_q_pagination = report.check4_q_pagination;
+          file.check5_opt_pagination = report.check5_opt_pagination;
+          file.check6_spacing = report.check6_spacing;
+          file.check7_time_balance = report.check7_time_balance;
+
           file.quality_summary = report.status === 'COMPLIANT'
-            ? `Passed (${report.step2_score})`
+            ? `Passed 7 Checks (${report.check7_time_balance ? report.check7_time_balance.slice(0, 30) : 'Compliant'})`
             : report.status === 'MISSING'
             ? 'Not submitted'
-            : `${report.step2_score}`;
+            : `Flagged (${report.check4_q_pagination && report.check4_q_pagination.includes('Warning') ? 'Pagination Issue' : report.check5_opt_pagination && report.check5_opt_pagination.includes('Warning') ? 'Options Issue' : 'Review Needed'})`;
           file.quality_status = report.status === 'COMPLIANT' ? 'normal' : 'error';
           file.memo = report.recommendation;
         }
@@ -681,6 +715,85 @@ function saveSettingsChanges() {
   closeSettingsModal();
   showToast('Settings saved. Syncing folder...', 'success');
   handleSyncFolder();
+// ================= Export to Google Sheets (.xlsx) and CSV =================
+function exportToGoogleSheetsExcel() {
+  if (!state.drive || !state.drive.files || state.drive.files.length === 0) {
+    showToast('No exam papers available to export.', 'warning');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    showToast('SheetJS library is still loading. Please try again in a moment.', 'warning');
+    return;
+  }
+
+  const exportRows = state.drive.files.map((f, idx) => ({
+    "Index": idx + 1,
+    "Subject": f.subject,
+    "Teacher": f.teacher,
+    "Exam File": f.name,
+    "Folder Path (Recursive)": f.folder_path || "Root",
+    "Exam Date": f.exam_date,
+    "Uploaded (O/X)": f.is_uploaded ? "O" : "X",
+    "PDF Verified (O/X)": f.pdf_exists ? "O" : "X",
+    "Quality Status": f.quality_status.toUpperCase(),
+    "Quality Summary": f.quality_summary,
+    "Check 1: Header Info": f.check1_header || "Verified",
+    "Check 2: Grammar & Typos": f.check2_grammar || "Passed",
+    "Check 3: Logical Errors": f.check3_logic || "Passed",
+    "Check 4: Q. Pagination": f.check4_q_pagination || "Passed",
+    "Check 5: Options Pagination": f.check5_opt_pagination || "Passed",
+    "Check 6: Formatting Spacing": f.check6_spacing || "Passed",
+    "Check 7: Time vs Workload": f.check7_time_balance || "Passed",
+    "Recommendation / Notes": f.memo
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportRows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "LIS_Exam_Audit");
+
+  const today = new Date().toISOString().slice(0, 10);
+  const fileName = `LIS_Exam_Inspection_Report_${today}.xlsx`;
+  XLSX.writeFile(workbook, fileName);
+  showToast(`Successfully exported Google Sheets / Excel file (${fileName}).`, 'success');
+}
+
+function exportToCsv() {
+  if (!state.drive || !state.drive.files || state.drive.files.length === 0) {
+    showToast('No exam papers available to export.', 'warning');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    showToast('SheetJS library is still loading. Please try again in a moment.', 'warning');
+    return;
+  }
+
+  const exportRows = state.drive.files.map((f, idx) => ({
+    "Index": idx + 1,
+    "Subject": f.subject,
+    "Teacher": f.teacher,
+    "Exam File": f.name,
+    "Folder Path": f.folder_path || "Root",
+    "Exam Date": f.exam_date,
+    "Uploaded": f.is_uploaded ? "O" : "X",
+    "PDF Verified": f.pdf_exists ? "O" : "X",
+    "Quality Status": f.quality_status.toUpperCase(),
+    "Quality Summary": f.quality_summary,
+    "Recommendation": f.memo
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportRows);
+  const csvContent = XLSX.utils.sheet_to_csv(worksheet);
+  const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  const today = new Date().toISOString().slice(0, 10);
+  const fileName = `LIS_Exam_Inspection_Report_${today}.csv`;
+  link.setAttribute("href", url);
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast(`Successfully downloaded CSV report (${fileName}).`, 'success');
 }
 
 // Initial Boot Sequence

@@ -27,10 +27,20 @@ class DriveFile(BaseModel):
     exam_date: str = Field("-", description="Scheduled exam date")
     is_uploaded: bool = Field(True, description="File presence flag")
     pdf_exists: bool = Field(False, description="Whether matching PDF inspection copy exists")
+    folder_path: str = Field("Root", description="Relative subfolder path in Drive")
     quality_summary: str = Field("Pending analysis", description="AI evaluation summary or ratio check")
     quality_status: str = Field("normal", description="Status code: 'normal', 'warning', 'error'")
     memo: str = Field("-", description="Administrative memo or notes")
     file_size_formatted: str = Field("0 KB", description="Human-readable file size")
+
+    # 7-Step Deep AI Quality Audit Fields
+    check1_header: Optional[str] = Field(None, description="Check 1 Header Information")
+    check2_grammar: Optional[str] = Field(None, description="Check 2 Grammar & Typos")
+    check3_logic: Optional[str] = Field(None, description="Check 3 Logical Errors")
+    check4_q_pagination: Optional[str] = Field(None, description="Check 4 Question Pagination")
+    check5_opt_pagination: Optional[str] = Field(None, description="Check 5 Options Pagination")
+    check6_spacing: Optional[str] = Field(None, description="Check 6 Formatting Consistency")
+    check7_time_balance: Optional[str] = Field(None, description="Check 7 Time vs Workload Balance")
 
 
 class DriveFolderSyncRequest(BaseModel):

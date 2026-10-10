@@ -95,7 +95,7 @@ function renderHeader(user) {
   if (user && user.is_authenticated) {
     headerUserCard.classList.remove('hidden');
     headerUserName.textContent = user.name || 'Vice Principal Kyumun Hwang';
-    headerUserEmail.textContent = user.email || 'kyumun_hwang@liskorea.org';
+    headerUserEmail.textContent = user.email || 'kyumun.hwang@gmail.com';
   } else {
     headerUserCard.classList.add('hidden');
   }
@@ -119,7 +119,7 @@ function renderAuthCard(auth) {
       ${isMock ? 'Mock Simulation Mode' : 'OAuth 2.0 Connected'}
     `;
 
-    authUserEmail.textContent = auth.user.email || 'kyumun_hwang@liskorea.org';
+    authUserEmail.textContent = auth.user.email || 'kyumun.hwang@gmail.com';
     authRoleBadge.textContent = auth.user.role || 'Vice Principal (Administrator)';
     apiStatusText.innerHTML = `
       <span class="material-symbols-outlined text-[16px] text-secondary">verified</span>

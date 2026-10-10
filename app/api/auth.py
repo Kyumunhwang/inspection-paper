@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 # In-memory session simulation for demonstration and single-user administrator
 _CURRENT_SESSION: dict[str, Optional[UserInfo]] = {
     "user": UserInfo(
-        email="kyumun_hwang@liskorea.org",
+        email="kyumun.hwang@gmail.com",
         name="Vice Principal Kyumun Hwang",
         picture="",
         role="Vice Principal (Administrator)",
@@ -117,7 +117,7 @@ def google_callback(code: str = Query(...)) -> RedirectResponse:
         profile = user_info_resp.json()
 
         user = UserInfo(
-            email=profile.get("email", "kyumun_hwang@liskorea.org"),
+            email=profile.get("email", "kyumun.hwang@gmail.com"),
             name=profile.get("name", "Vice Principal Kyumun Hwang"),
             picture=profile.get("picture", ""),
             role="Vice Principal (Administrator)",
@@ -142,7 +142,7 @@ def mock_login() -> AuthStatusResponse:
         AuthStatusResponse with mock session.
     """
     user = UserInfo(
-        email="kyumun_hwang@liskorea.org",
+        email="kyumun.hwang@gmail.com",
         name="Vice Principal Kyumun Hwang",
         picture="",
         role="Vice Principal (Administrator)",

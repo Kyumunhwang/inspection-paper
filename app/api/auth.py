@@ -78,6 +78,9 @@ def google_login(request: Request) -> RedirectResponse:
         scopes=settings.GOOGLE_SCOPES,
         redirect_uri=redirect_uri,
     )
+    # Disable PKCE code verifier for server-side confidential client to prevent session mismatch on stateless Cloud Run
+    flow.autogenerate_code_verifier = False
+    flow.code_verifier = None
 
     auth_url, _ = flow.authorization_url(
         access_type="offline",
@@ -116,6 +119,8 @@ def google_callback(request: Request, code: str = Query(...)) -> RedirectRespons
             scopes=settings.GOOGLE_SCOPES,
             redirect_uri=redirect_uri,
         )
+        flow.autogenerate_code_verifier = False
+        flow.code_verifier = None
 
         flow.fetch_token(code=code)
         credentials = flow.credentials

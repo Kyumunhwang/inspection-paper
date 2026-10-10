@@ -143,6 +143,13 @@ class DriveService:
                 )
 
         # Simulation Mode
+        if clean_id != "1A2b3C4d_LIS2025_ExamMid" and clean_id not in self._mock_data_cache:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=401,
+                detail=f"Google Account Sign-In Required: You are currently in Mock Simulation mode. To inspect your real Google Drive folder ('{clean_id}'), please click 'Sign In with Google' first."
+            )
+
         files = self._mock_data_cache.get(clean_id, self._mock_data_cache["default"])
         uploaded_count = sum(1 for f in files if f.is_uploaded)
         approved_count = sum(1 for f in files if f.pdf_exists)

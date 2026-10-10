@@ -105,64 +105,67 @@ function renderAuthCard(auth) {
   const authStatusBadge = document.getElementById('authStatusBadge');
   const authUserEmail = document.getElementById('authUserEmail');
   const authRoleBadge = document.getElementById('authRoleBadge');
+  const googleLoginBtn = document.getElementById('googleLoginBtn');
   const authActionBtn = document.getElementById('authActionBtn');
   const mockSwitchBtn = document.getElementById('mockSwitchBtn');
   const apiStatusText = document.getElementById('apiStatusText');
 
-  if (auth.is_authenticated && auth.user) {
-    const isMock = auth.auth_mode === 'mock';
-    authStatusBadge.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-      isMock ? 'bg-surface-container-high text-primary' : 'bg-secondary-fixed text-on-secondary-fixed-variant'
-    }`;
-    authStatusBadge.innerHTML = `
-      <span class="w-1.5 h-1.5 rounded-full ${isMock ? 'bg-primary' : 'bg-secondary'}"></span>
-      ${isMock ? 'Mock Simulation Mode' : 'OAuth 2.0 Connected'}
-    `;
+  if (auth && auth.is_authenticated && auth.user) {
+    const isGoogle = auth.auth_mode === 'google';
+    if (isGoogle) {
+      authStatusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-semibold';
+      authStatusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Google OAuth Connected';
+      authUserEmail.textContent = auth.user.email || 'kyumun.hwang@gmail.com';
+      authRoleBadge.textContent = auth.user.role || 'Vice Principal (Administrator)';
+      apiStatusText.innerHTML = '<span class="material-symbols-outlined text-[16px] text-secondary">verified</span> Google Drive & Docs API v3 Active';
 
-    authUserEmail.textContent = auth.user.email || 'kyumun.hwang@gmail.com';
-    authRoleBadge.textContent = auth.user.role || 'Vice Principal (Administrator)';
-    apiStatusText.innerHTML = `
-      <span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
-      ${isMock ? 'Simulation Adapter Active (Read-only)' : 'Google Drive & Docs API v3 Active'}
-    `;
-
-    authActionBtn.innerHTML = `
-      <span class="material-symbols-outlined text-[15px]">logout</span>
-      Sign Out
-    `;
-    authActionBtn.onclick = handleSignOut;
-
-    mockSwitchBtn.classList.remove('hidden');
-    mockSwitchBtn.textContent = isMock ? 'Connect Real Google Account' : 'Switch to Mock Mode';
-    mockSwitchBtn.onclick = () => {
-      if (isMock) {
-        triggerRealGoogleLogin();
-      } else {
-        handleMockSignIn();
+      if (googleLoginBtn) googleLoginBtn.classList.add('hidden');
+      if (authActionBtn) {
+        authActionBtn.classList.remove('hidden');
+        authActionBtn.innerHTML = '<span class="material-symbols-outlined text-[15px]">logout</span><span>Sign Out</span>';
+        authActionBtn.onclick = handleSignOut;
       }
-    };
+      if (mockSwitchBtn) {
+        mockSwitchBtn.classList.remove('hidden');
+        mockSwitchBtn.textContent = 'Switch to Mock';
+        mockSwitchBtn.onclick = handleMockSignIn;
+      }
+    } else { // Mock Mode
+      authStatusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-primary text-xs font-semibold';
+      authStatusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Mock Simulation Mode';
+      authUserEmail.textContent = `${auth.user.email || 'kyumun.hwang@gmail.com'} (Simulated)`;
+      authRoleBadge.textContent = 'Mock Administrator';
+      apiStatusText.innerHTML = '<span class="material-symbols-outlined text-[16px] text-tertiary">science</span> Simulation Adapter Active (Read-only)';
+
+      if (googleLoginBtn) {
+        googleLoginBtn.classList.remove('hidden');
+        googleLoginBtn.onclick = triggerRealGoogleLogin;
+      }
+      if (authActionBtn) {
+        authActionBtn.classList.remove('hidden');
+        authActionBtn.innerHTML = '<span class="material-symbols-outlined text-[15px]">logout</span><span>Sign Out</span>';
+        authActionBtn.onclick = handleSignOut;
+      }
+      if (mockSwitchBtn) mockSwitchBtn.classList.add('hidden');
+    }
   } else {
+    // Unauthenticated
     authStatusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-xs font-semibold';
-    authStatusBadge.innerHTML = `
-      <span class="w-1.5 h-1.5 rounded-full bg-error"></span>
-      Not Signed In
-    `;
+    authStatusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Not Signed In';
     authUserEmail.textContent = 'Sign in required to inspect Drive folder';
     authRoleBadge.textContent = 'Guest';
-    apiStatusText.innerHTML = `
-      <span class="material-symbols-outlined text-[16px] text-outline-variant">lock</span>
-      Authentication Required
-    `;
+    apiStatusText.innerHTML = '<span class="material-symbols-outlined text-[16px] text-outline-variant">lock</span> Authentication Required';
 
-    authActionBtn.innerHTML = `
-      <span class="material-symbols-outlined text-[15px]">login</span>
-      Sign In with Google
-    `;
-    authActionBtn.onclick = triggerRealGoogleLogin;
-
-    mockSwitchBtn.classList.remove('hidden');
-    mockSwitchBtn.textContent = 'Sign In as Mock Admin';
-    mockSwitchBtn.onclick = handleMockSignIn;
+    if (googleLoginBtn) {
+      googleLoginBtn.classList.remove('hidden');
+      googleLoginBtn.onclick = triggerRealGoogleLogin;
+    }
+    if (authActionBtn) authActionBtn.classList.add('hidden');
+    if (mockSwitchBtn) {
+      mockSwitchBtn.classList.remove('hidden');
+      mockSwitchBtn.textContent = 'Use Mock Demo';
+      mockSwitchBtn.onclick = handleMockSignIn;
+    }
   }
 }
 
@@ -328,6 +331,13 @@ async function handleSyncFolder() {
   const folderId = match ? match[1] : rawFolder.split('?')[0].split('&')[0].trim();
   folderInput.value = folderId;
 
+  // If attempting to inspect a real custom folder while in simulation mode
+  if (state.auth && state.auth.auth_mode === 'mock' && folderId !== '1A2b3C4d_LIS2025_ExamMid') {
+    showToast(`Notice: Custom folder '${folderId}' requires real Google account login. Connecting to Google...`, 'warning');
+    setTimeout(() => { triggerRealGoogleLogin(); }, 1200);
+    return;
+  }
+
   syncBtn.disabled = true;
   syncBtnIcon.classList.add('animate-spin');
   syncBtnText.textContent = 'Syncing...';
@@ -344,7 +354,12 @@ async function handleSyncFolder() {
     renderTable(response.files);
     showToast(`Successfully synchronized Google Drive folder (${response.files.length} papers)`, 'success');
   } catch (error) {
-    showToast(`Folder sync failed: ${error.message}`, 'error');
+    if (error.message.includes('401') || error.message.includes('Sign-In Required') || error.message.includes('Google Account')) {
+      showToast(`Google Sign-In Required for folder '${folderId}'. Redirecting to Google Login...`, 'warning');
+      setTimeout(() => { triggerRealGoogleLogin(); }, 1500);
+    } else {
+      showToast(`Folder sync failed: ${error.message}`, 'error');
+    }
   } finally {
     syncBtn.disabled = false;
     syncBtnIcon.classList.remove('animate-spin');
@@ -715,6 +730,8 @@ function saveSettingsChanges() {
   closeSettingsModal();
   showToast('Settings saved. Syncing folder...', 'success');
   handleSyncFolder();
+}
+
 // ================= Export to Google Sheets (.xlsx) and CSV =================
 function exportToGoogleSheetsExcel() {
   if (!state.drive || !state.drive.files || state.drive.files.length === 0) {
